@@ -1,0 +1,382 @@
+.footer {
+    background: linear-gradient(135deg, #715F54 0%, #AE6E4E 100%);
+    color: #F5F5DD;
+    margin-top: auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #AE6E4E, #D5B195, transparent);
+}
+
+.footer::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle at center, rgba(174, 110, 78, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.footer-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Reduced padding from py-12 to py-8 */
+.py-12 {
+    padding-top: 2rem;     /* Reduced from 3rem */
+    padding-bottom: 2rem;  /* Reduced from 3rem */
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 2rem;  /* Reduced from 3rem */
+}
+
+@media (min-width: 768px) {
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;  /* Reduced gap */
+    }
+}
+
+@media (min-width: 1024px) {
+    .footer-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;  /* Reduced from 2rem */
+    }
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;  /* Reduced from 1.5rem */
+    position: relative;
+}
+
+.footer-logo-icon {
+    color: #AE6E4E;
+    margin-right: 0.75rem;
+    width: 2rem;  /* Reduced from 2.5rem */
+    height: 2rem; /* Reduced from 2.5rem */
+    background: rgba(245, 245, 221, 0.2);
+    border-radius: 10px;  /* Reduced from 12px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(174, 110, 78, 0.2);  /* Reduced shadow */
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease;
+}
+
+.footer-logo:hover .footer-logo-icon {
+    transform: rotate(-5deg) scale(1.1);
+}
+
+.footer-logo-text {
+    font-size: 1.5rem;  /* Reduced from 1.75rem */
+    font-weight: 700;   /* Reduced from 800 */
+    background: linear-gradient(135deg, #AE6E4E 0%, #D5B195 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.025em;
+    position: relative;
+}
+
+.footer-description {
+    font-size: 0.85rem;  /* Reduced from 0.95rem */
+    line-height: 1.6;    /* Reduced from 1.7 */
+    color: #E7D3AD;
+    margin-bottom: 1rem; /* Reduced from 1.5rem */
+    padding-left: 0.25rem;
+    position: relative;
+}
+
+.footer-description::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, #AE6E4E, transparent);
+    opacity: 0.6;
+}
+
+.footer-heading {
+    color: #F5F5DD;
+    font-size: 1rem;     /* Reduced from 1.125rem */
+    font-weight: 600;    /* Reduced from 700 */
+    margin-bottom: 0.75rem; /* Reduced from 1.25rem */
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.375rem; /* Reduced from 0.5rem */
+}
+
+.footer-heading::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 30px;  /* Reduced from 40px */
+    height: 2px;
+    background: linear-gradient(90deg, #AE6E4E, transparent);
+    border-radius: 1px;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.375rem; /* Reduced from 0.5rem */
+    position: relative;
+}
+
+.footer-link {
+    color: #E7D3AD;
+    text-decoration: none;
+    font-size: 0.85rem;  /* Reduced from 0.95rem */
+    padding: 0.375rem 0; /* Reduced from 0.5rem */
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    position: relative;
+    padding-left: 0;
+}
+
+.footer-link::before {
+    content: '→';
+    position: absolute;
+    left: -1rem;  /* Reduced from 1.25rem */
+    opacity: 0;
+    transition: all 0.3s ease;
+    color: #AE6E4E;
+    font-size: 0.8rem;  /* Added smaller font */
+}
+
+.footer-link:hover {
+    color: #AE6E4E;
+    padding-left: 1rem;  /* Reduced from 1.25rem */
+    transform: translateX(6px); /* Reduced from 8px */
+}
+
+.footer-link:hover::before {
+    opacity: 1;
+    left: 0;
+}
+
+.social-links {
+    display: flex;
+    gap: 0.5rem;  /* Reduced from 0.75rem */
+    margin-top: 1rem; /* Reduced from 1.5rem */
+}
+
+.social-link {
+    width: 2.25rem;  /* Reduced from 2.75rem */
+    height: 2.25rem; /* Reduced from 2.75rem */
+    background: rgba(113, 95, 84, 0.3);
+    border-radius: 10px;  /* Reduced from 12px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #E7D3AD;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(245, 245, 221, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.social-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #AE6E4E, #D5B195);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.social-link svg {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+    width: 1rem;  /* Added specific size */
+    height: 1rem; /* Added specific size */
+}
+
+.social-link:hover {
+    transform: translateY(-3px); /* Reduced from -4px */
+    box-shadow: 0 6px 12px rgba(174, 110, 78, 0.25); /* Reduced shadow */
+    border-color: transparent;
+}
+
+.social-link:hover::before {
+    opacity: 1;
+}
+
+.social-link:hover svg {
+    transform: scale(1.1);
+    color: #F5F5DD;
+}
+
+/* Updated copyright section - SIMPLIFIED without box */
+.copyright {
+    border-top: 1px solid rgba(245, 245, 221, 0.2);
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #D5B195;
+}
+
+.copyright p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.copyright p:first-child {
+    margin-bottom: 0.25rem;
+}
+
+.copyright .mt-1 {
+    color: #F5F5DD;
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+/* Animation for the footer */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.footer-grid > div {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.footer-grid > div:nth-child(1) { animation-delay: 0.1s; }
+.footer-grid > div:nth-child(2) { animation-delay: 0.2s; }
+.footer-grid > div:nth-child(3) { animation-delay: 0.3s; }
+.footer-grid > div:nth-child(4) { animation-delay: 0.4s; }
+
+/* Hover effects for entire columns */
+.footer-grid > div:hover .footer-heading::after {
+    width: 100%;
+    background: linear-gradient(90deg, #AE6E4E, #D5B195);
+    transition: width 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .footer {
+        text-align: center;
+        background: linear-gradient(135deg, #715F54 0%, #AE6E4E 100%);
+    }
+
+    .footer-description::before {
+        display: none;
+    }
+
+    .footer-link:hover {
+        padding-left: 0;
+        transform: none;
+    }
+
+    .footer-link::before {
+        display: none;
+    }
+
+    .footer-logo {
+        justify-content: center;
+    }
+
+    .social-links {
+        justify-content: center;
+    }
+
+    .footer-heading::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .footer::after {
+        background: radial-gradient(circle at center, rgba(174, 110, 78, 0.1) 0%, transparent 70%);
+    }
+
+    /* Additional mobile-specific height reduction */
+    .py-12 {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .footer-grid {
+        gap: 1.5rem;
+    }
+
+    .copyright {
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+        margin-top: 1.5rem;
+    }
+}
+
+/* Small screens - further reduce height */
+@media (max-width: 640px) {
+    .py-12 {
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+    }
+
+    .footer-grid {
+        gap: 1.25rem;
+    }
+
+    .copyright {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        margin-top: 1.25rem;
+        font-size: 0.8rem;
+    }
+
+    .copyright .mt-1 {
+        font-size: 0.75rem;
+    }
+
+    .footer-logo-text {
+        font-size: 1.25rem;
+    }
+}
+
+/* Enhanced glass effect for modern browsers */
+@supports (backdrop-filter: blur(10px)) {
+    .footer {
+        background: linear-gradient(135deg, rgba(113, 95, 84, 0.95) 0%, rgba(174, 110, 78, 0.95) 100%);
+    }
+}
