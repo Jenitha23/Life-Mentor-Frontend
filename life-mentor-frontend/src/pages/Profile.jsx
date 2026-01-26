@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { profileService } from '../services/profileService';
+import { lifestyleAssessmentService } from '../services/lifestyleAssessmentService';
 import PasswordChange from '../components/PasswordChange';
 import FileUploadModal from '../components/FileUploadModal';
 import DeleteAccountModal from '../components/DeleteAccountModal';
@@ -14,6 +15,10 @@ const Profile = () => {
     const { user, logout, updateUser } = useAuth();
     const navigate = useNavigate();
 
+    // Use refs to prevent unnecessary re-renders
+    const hasFetchedData = useRef(false);
+    const fetchProfileTimeout = useRef(null);
+
     // State management
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
@@ -23,22 +28,25 @@ const Profile = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const [deletingPhoto, setDeletingPhoto] = useState(false);
+    const [assessmentStatus, setAssessmentStatus] = useState(false);
 
-    const [formData, setFormData] = useState(() => ({
+    const [formData, setFormData] = useState({
         name: '',
         email: '',
         phoneNumber: '',
         bio: '',
         dateOfBirth: '',
         gender: ''
-    }));
+    });
 
-    const [stats, setStats] = useState(() => ({
+    const [errors, setErrors] = useState({});
+
+    const [stats, setStats] = useState({
         joinedDate: '',
         streak: 0,
         completedGoals: 0,
         totalCheckins: 0
-    }));
+    });
 
     // Memoized values
     const profileImageUrl = useMemo(() => {
@@ -55,64 +63,109 @@ const Profile = () => {
             .slice(0, 2);
     }, [user?.name]);
 
-    // Memoized handlers
-    const fetchProfile = useCallback(async () => {
-        if (!user) return;
+    // Stable fetch function with debouncing
+    const fetchProfile = useCallback(async (force = false) => {
+        if ((!user || hasFetchedData.current) && !force) return;
 
         setLoading(true);
         try {
-            const result = await profileService.getProfile();
-            if (result.success && result.data) {
-                const profileData = result.data;
+            console.log('Fetching profile data...');
 
-                // Batch state updates
-                setFormData({
+            // Fetch user profile
+            const profileResult = await profileService.getProfile();
+
+            if (profileResult.success) {
+                const profileData = profileResult.data;
+                console.log('Profile data received:', profileData);
+
+                // Batch all state updates together
+                const newFormData = {
                     name: profileData.name || '',
                     email: profileData.email || '',
                     phoneNumber: profileData.phoneNumber || '',
                     bio: profileData.bio || '',
                     dateOfBirth: profileData.dateOfBirth || '',
                     gender: profileData.gender || ''
-                });
+                };
 
-                // Update user in context (single update)
-                updateUser({
-                    ...user,
-                    ...profileData
-                });
+                const newStats = {
+                    joinedDate: formatDate(profileData.createdAt) || 'N/A',
+                    streak: 0,
+                    completedGoals: 0,
+                    totalCheckins: 0,
+                    lastLogin: formatDate(profileData.lastLogin) || 'N/A'
+                };
 
-                // Format stats
-                setStats({
-                    joinedDate: formatDate(profileData.createdAt) || '2024-01-01',
-                    streak: 14,
-                    completedGoals: 8,
-                    totalCheckins: 45
-                });
+                // Update all states in sequence to prevent blinking
+                setFormData(newFormData);
+                setStats(newStats);
+
+                // Update user in context - only if data changed
+                if (JSON.stringify(user) !== JSON.stringify({ ...user, ...profileData })) {
+                    updateUser({
+                        ...user,
+                        ...profileData
+                    });
+                }
+
+                console.log('Profile data updated successfully');
             } else {
-                toast.error('Failed to load profile');
+                console.error('Profile fetch failed:', profileResult.message);
             }
+
+            // Check assessment status
+            try {
+                console.log('Checking assessment status...');
+                const hasAssessment = await lifestyleAssessmentService.hasAssessment();
+                setAssessmentStatus(hasAssessment);
+                console.log('Assessment status:', hasAssessment);
+            } catch (assessmentError) {
+                console.log('Could not check assessment status:', assessmentError.message);
+                setAssessmentStatus(false);
+            }
+
+            hasFetchedData.current = true;
+
         } catch (error) {
             console.error('Profile fetch error:', error);
-            toast.error('Error loading profile');
+
+            if (error.response?.status === 401) {
+                toast.error('Session expired. Please login again.');
+                logout();
+                navigate('/login');
+            } else if (!error.response?.status === 404) {
+                toast.error('Error loading profile data');
+            }
         } finally {
             setLoading(false);
         }
-    }, [user, updateUser]);
+    }, [user, updateUser, logout, navigate]);
 
+    // Debounced effect with cleanup
     useEffect(() => {
         if (!user) {
             navigate('/login');
             return;
         }
 
+        // Clear any pending timeout
+        if (fetchProfileTimeout.current) {
+            clearTimeout(fetchProfileTimeout.current);
+        }
+
         // Debounce the fetch to prevent multiple calls
-        const timer = setTimeout(() => {
+        fetchProfileTimeout.current = setTimeout(() => {
             fetchProfile();
         }, 100);
 
-        return () => clearTimeout(timer);
+        return () => {
+            if (fetchProfileTimeout.current) {
+                clearTimeout(fetchProfileTimeout.current);
+            }
+        };
     }, [user, navigate, fetchProfile]);
 
+    // Stable format function
     const formatDate = useCallback((dateString) => {
         if (!dateString) return '';
         try {
@@ -123,28 +176,88 @@ const Profile = () => {
                 day: 'numeric'
             });
         } catch (error) {
+            console.error('Date formatting error:', error);
             return '';
         }
     }, []);
 
+    // Stable input handler
     const handleInputChange = useCallback((e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    }, []);
 
+        // Use functional update to ensure we have latest state
+        setFormData(prev => {
+            const newFormData = {
+                ...prev,
+                [name]: value
+            };
+            return newFormData;
+        });
+
+        // Clear error for this field when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    }, [errors]);
+
+    // Stable form validation
+    const validateForm = useCallback(() => {
+        const newErrors = {};
+
+        // Only validate if field has value (for optional fields)
+        if (formData.name && formData.name.length < 2) {
+            newErrors.name = 'Name must be at least 2 characters';
+        }
+
+        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = 'Invalid email format';
+        }
+
+        if (formData.phoneNumber && !/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.replace(/\s/g, ''))) {
+            newErrors.phoneNumber = 'Invalid phone number format';
+        }
+
+        if (formData.bio && formData.bio.length > 500) {
+            newErrors.bio = 'Bio cannot exceed 500 characters';
+        }
+
+        // Update errors state
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return false;
+        }
+
+        return true;
+    }, [formData]);
+
+    // Stable save handler
     const handleSaveProfile = useCallback(async () => {
+        if (!validateForm()) {
+            toast.error('Please fix the errors in the form');
+            return;
+        }
+
         setUpdating(true);
         try {
+            console.log('Saving profile with data:', formData);
+
             const result = await profileService.updateProfile(formData);
+
             if (result.success) {
                 toast.success('Profile updated successfully!');
                 setIsEditing(false);
 
-                // Update user in context
+                // Update local state with response data
                 if (result.data) {
+                    setFormData(prev => ({
+                        ...prev,
+                        ...result.data
+                    }));
+
+                    // Update user context
                     updateUser({
                         ...user,
                         ...result.data
@@ -154,13 +267,27 @@ const Profile = () => {
                 toast.error(result.message || 'Failed to update profile');
             }
         } catch (error) {
-            console.error('Save profile error:', error);
-            toast.error('Failed to update profile');
+            console.error('Save profile error details:', error);
+
+            if (error.response?.status === 400 && error.response?.data?.data) {
+                const validationErrors = error.response.data.data;
+                const errorMessages = Object.values(validationErrors).join(', ');
+                toast.error(`Validation errors: ${errorMessages}`);
+
+                setErrors(validationErrors);
+            } else if (error.response?.status === 401) {
+                toast.error('Session expired. Please login again.');
+                logout();
+                navigate('/login');
+            } else {
+                toast.error(error.response?.data?.message || 'Failed to update profile. Please try again.');
+            }
         } finally {
             setUpdating(false);
         }
-    }, [formData, updateUser, user]);
+    }, [formData, updateUser, user, logout, navigate, validateForm]);
 
+    // Stable file upload handler
     const handleFileUpload = useCallback(async (file) => {
         setUploadingPhoto(true);
         try {
@@ -168,24 +295,29 @@ const Profile = () => {
             if (result.success) {
                 toast.success('Profile picture updated!');
                 setShowFileUpload(false);
-                // Refresh only specific data instead of full fetch
                 if (result.data) {
-                    updateUser({
-                        ...user,
+                    updateUser(prev => ({
+                        ...prev,
                         profilePictureUrl: result.data
-                    });
+                    }));
                 }
             } else {
                 toast.error(result.message || 'Failed to upload picture');
             }
         } catch (error) {
             console.error('File upload error:', error);
-            toast.error('Failed to upload picture');
+
+            if (error.response?.status === 400) {
+                toast.error(error.response.data?.message || 'Invalid file. Please upload an image under 5MB.');
+            } else {
+                toast.error('Failed to upload picture. Please try again.');
+            }
         } finally {
             setUploadingPhoto(false);
         }
-    }, [updateUser, user]);
+    }, [updateUser]);
 
+    // Stable delete picture handler
     const handleDeletePicture = useCallback(async () => {
         if (!window.confirm('Are you sure you want to remove your profile picture?')) {
             return;
@@ -196,11 +328,10 @@ const Profile = () => {
             const result = await profileService.deleteProfilePicture();
             if (result.success) {
                 toast.success('Profile picture removed');
-                // Update only the profile picture
-                updateUser({
-                    ...user,
+                updateUser(prev => ({
+                    ...prev,
                     profilePictureUrl: null
-                });
+                }));
             } else {
                 toast.error(result.message || 'Failed to remove picture');
             }
@@ -210,8 +341,9 @@ const Profile = () => {
         } finally {
             setDeletingPhoto(false);
         }
-    }, [updateUser, user]);
+    }, [updateUser]);
 
+    // Stable delete account handler
     const handleDeleteAccount = useCallback(async () => {
         try {
             const result = await profileService.deleteAccount();
@@ -230,100 +362,65 @@ const Profile = () => {
         }
     }, [logout, navigate]);
 
-    // Prevent unnecessary re-renders
-    if (loading && !user) {
+    // Stable navigation handler
+    const handleNavigateToAssessment = useCallback(() => {
+        if (assessmentStatus) {
+            navigate('/dashboard/assessment');
+        } else {
+            navigate('/dashboard/assessment/create');
+        }
+    }, [assessmentStatus, navigate]);
+
+    // Loading state
+    if (loading) {
         return (
             <div className="profile-loading">
                 <LoadingSpinner size="large" />
+                <p className="loading-text">Loading your profile...</p>
             </div>
         );
     }
 
     if (!user) {
-        return null;
+        return (
+            <div className="profile-error">
+                <h2>Please login to view your profile</h2>
+                <button onClick={() => navigate('/login')} className="login-redirect-btn">
+                    Go to Login
+                </button>
+            </div>
+        );
     }
 
     return (
-        <div className="profile-container" key="profile-container">
-            {/* Header Section - Fixed with stable keys */}
-            <div className="profile-header" key="profile-header">
-                <div className="profile-header-content">
-                    <div className="profile-avatar-wrapper">
-                        {profileImageUrl ? (
-                            <div className="profile-avatar-image" key="avatar-image">
-                                <img
-                                    src={profileImageUrl}
-                                    alt={user.name}
-                                    className="profile-avatar-img"
-                                    key="avatar-img"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        const parent = e.target.parentElement;
-                                        const fallback = document.createElement('div');
-                                        fallback.className = 'profile-avatar';
-                                        fallback.innerHTML = `<span>${userInitials}</span>`;
-                                        parent.appendChild(fallback);
-                                    }}
-                                />
-                                {deletingPhoto && (
-                                    <div className="avatar-overlay">
-                                        <LoadingSpinner size="small" />
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="profile-avatar" key="avatar-initials">
-                                <span>{userInitials}</span>
-                            </div>
-                        )}
-
-                        <button
-                            className="profile-edit-btn"
-                            onClick={() => setShowFileUpload(true)}
-                            disabled={uploadingPhoto || deletingPhoto}
-                            key="edit-avatar-btn"
-                        >
-                            {uploadingPhoto || deletingPhoto ? (
-                                <LoadingSpinner size="small" />
-                            ) : (
-                                <svg className="edit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            )}
-                        </button>
-                    </div>
-
-                    <h1 className="profile-name" key="profile-name">{user.name}</h1>
-                    <p className="profile-email" key="profile-email">{user.email}</p>
-
-                    {user.emailVerified ? (
-                        <div className="email-verified-badge" key="verified-badge">
-                            <svg className="verified-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Email Verified
-                        </div>
-                    ) : (
-                        <button className="verify-email-btn" key="verify-email-btn">
-                            Verify Email
-                        </button>
-                    )}
-                </div>
-            </div>
+        <div className="profile-container">
+            {/* Header Section - Memoized */}
+            <ProfileHeader
+                profileImageUrl={profileImageUrl}
+                userInitials={userInitials}
+                user={user}
+                showFileUpload={showFileUpload}
+                setShowFileUpload={setShowFileUpload}
+                uploadingPhoto={uploadingPhoto}
+                deletingPhoto={deletingPhoto}
+            />
 
             {/* Content Section */}
             <div className="profile-content-wrapper">
                 <motion.div
+                    key="profile-grid"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
                     className="profile-grid"
-                    key="profile-grid"
                 >
                     {/* Personal Information Card */}
                     <ProfileInfoCard
+                        key="info-card"
                         isEditing={isEditing}
                         formData={formData}
+                        errors={errors}
                         onInputChange={handleInputChange}
                         onSave={handleSaveProfile}
                         onToggleEdit={() => setIsEditing(!isEditing)}
@@ -332,19 +429,25 @@ const Profile = () => {
 
                     {/* Stats Card */}
                     <StatsCard
+                        key="stats-card"
                         stats={stats}
                         user={user}
                         formatDate={formatDate}
-                        onViewDashboard={() => navigate('/dashboard')}
+                        assessmentStatus={assessmentStatus}
+                        onNavigateToAssessment={handleNavigateToAssessment}
                     />
 
                     {/* Account Settings Card */}
                     <AccountSettingsCard
+                        key="settings-card"
                         user={user}
                         onPasswordChange={() => setShowPasswordChange(true)}
                         onDeletePicture={handleDeletePicture}
                         deletingPhoto={deletingPhoto}
-                        onLogout={logout}
+                        onLogout={() => {
+                            logout();
+                            navigate('/login');
+                        }}
                         onDeleteAccount={() => setShowDeleteModal(true)}
                     />
                 </motion.div>
@@ -380,10 +483,90 @@ const Profile = () => {
     );
 };
 
-// Extract Card Components to prevent re-renders
+// Extract Header Component
+const ProfileHeader = React.memo(({
+                                      profileImageUrl,
+                                      userInitials,
+                                      user,
+                                      showFileUpload,
+                                      setShowFileUpload,
+                                      uploadingPhoto,
+                                      deletingPhoto
+                                  }) => (
+    <div className="profile-header">
+        <div className="profile-header-content">
+            <div className="profile-avatar-wrapper">
+                {profileImageUrl ? (
+                    <div className="profile-avatar-image">
+                        <img
+                            src={profileImageUrl}
+                            alt={user.name}
+                            className="profile-avatar-img"
+                            loading="lazy"
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.parentElement.innerHTML = `
+                                    <div class="profile-avatar">
+                                        <span>${userInitials}</span>
+                                    </div>
+                                `;
+                            }}
+                        />
+                        {deletingPhoto && (
+                            <div className="avatar-overlay">
+                                <LoadingSpinner size="small" />
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="profile-avatar">
+                        <span>{userInitials}</span>
+                    </div>
+                )}
+
+                <button
+                    className="profile-edit-btn"
+                    onClick={() => setShowFileUpload(true)}
+                    disabled={uploadingPhoto || deletingPhoto}
+                    title="Change profile picture"
+                >
+                    {uploadingPhoto || deletingPhoto ? (
+                        <LoadingSpinner size="small" />
+                    ) : (
+                        <svg className="edit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    )}
+                </button>
+            </div>
+
+            <h1 className="profile-name">{user.name}</h1>
+            <p className="profile-email">{user.email}</p>
+
+            {user.emailVerified ? (
+                <div className="email-verified-badge">
+                    <svg className="verified-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Email Verified
+                </div>
+            ) : (
+                <button
+                    className="verify-email-btn"
+                    onClick={() => toast.info('Email verification feature coming soon!')}
+                >
+                    Verify Email
+                </button>
+            )}
+        </div>
+    </div>
+));
+
+// Extract Card Components
 const ProfileInfoCard = React.memo(({
                                         isEditing,
                                         formData,
+                                        errors,
                                         onInputChange,
                                         onSave,
                                         onToggleEdit,
@@ -397,18 +580,25 @@ const ProfileInfoCard = React.memo(({
             isEditing={isEditing}
             name="name"
             value={formData.name}
+            error={errors.name}
             onChange={onInputChange}
             placeholder="Enter your name"
             type="text"
+            required={isEditing}
         />
 
-        <ReadOnlyField label="Email Address" value={formData.email} />
+        <ReadOnlyField
+            label="Email Address"
+            value={formData.email}
+            isEditing={isEditing}
+        />
 
         <FormField
             label="Phone Number"
             isEditing={isEditing}
             name="phoneNumber"
             value={formData.phoneNumber}
+            error={errors.phoneNumber}
             onChange={onInputChange}
             placeholder="+1234567890"
             type="tel"
@@ -419,6 +609,7 @@ const ProfileInfoCard = React.memo(({
             isEditing={isEditing}
             name="bio"
             value={formData.bio}
+            error={errors.bio}
             onChange={onInputChange}
             placeholder="Tell us about yourself..."
             type="textarea"
@@ -431,6 +622,7 @@ const ProfileInfoCard = React.memo(({
                 isEditing={isEditing}
                 name="gender"
                 value={formData.gender}
+                error={errors.gender}
                 onChange={onInputChange}
                 type="select"
                 options={[
@@ -450,6 +642,7 @@ const ProfileInfoCard = React.memo(({
                 isEditing={isEditing}
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
+                error={errors.dateOfBirth}
                 onChange={onInputChange}
                 type="date"
             />
@@ -492,7 +685,13 @@ const ProfileInfoCard = React.memo(({
     </div>
 ));
 
-const StatsCard = React.memo(({ stats, user, formatDate, onViewDashboard }) => (
+const StatsCard = React.memo(({
+                                  stats,
+                                  user,
+                                  formatDate,
+                                  assessmentStatus,
+                                  onNavigateToAssessment
+                              }) => (
     <div className="profile-card">
         <h2 className="profile-card-title">Your Journey</h2>
 
@@ -500,6 +699,13 @@ const StatsCard = React.memo(({ stats, user, formatDate, onViewDashboard }) => (
             <div className="stats-item">
                 <span className="stats-label">Member Since</span>
                 <span className="stats-value">{stats.joinedDate}</span>
+            </div>
+
+            <div className="stats-item">
+                <span className="stats-label">Assessment Status</span>
+                <span className={`stats-value ${assessmentStatus ? 'status-completed' : 'status-pending'}`}>
+                    {assessmentStatus ? 'Completed' : 'Not Started'}
+                </span>
             </div>
 
             <div className="stats-item">
@@ -520,19 +726,19 @@ const StatsCard = React.memo(({ stats, user, formatDate, onViewDashboard }) => (
             <div className="stats-item">
                 <span className="stats-label">Last Login</span>
                 <span className="stats-value">
-                    {user.lastLogin ? formatDate(user.lastLogin) : 'N/A'}
+                    {stats.lastLogin || 'N/A'}
                 </span>
             </div>
         </div>
 
         <button
-            onClick={onViewDashboard}
+            onClick={onNavigateToAssessment}
             className="profile-stats-btn"
         >
             <svg className="stats-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
-            View Detailed Dashboard
+            {assessmentStatus ? 'View Assessment' : 'Start Assessment'}
         </button>
     </div>
 ));
@@ -632,11 +838,13 @@ const FormField = React.memo(({
                                   isEditing,
                                   name,
                                   value,
+                                  error,
                                   onChange,
                                   placeholder,
                                   type = 'text',
                                   rows,
-                                  options = []
+                                  options = [],
+                                  required = false
                               }) => {
     if (!isEditing && type !== 'textarea') {
         return <ReadOnlyField label={label} value={value || 'Not provided'} />;
@@ -655,50 +863,65 @@ const FormField = React.memo(({
 
     return (
         <div className="form-group">
-            <label className="form-label">{label}</label>
+            <label className="form-label">
+                {label}
+                {required && <span className="required-star">*</span>}
+            </label>
             {type === 'textarea' ? (
-                <textarea
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    className="profile-textarea"
-                    placeholder={placeholder}
-                    rows={rows}
-                />
+                <>
+                    <textarea
+                        name={name}
+                        value={value}
+                        onChange={onChange}
+                        className={`profile-textarea ${error ? 'error' : ''}`}
+                        placeholder={placeholder}
+                        rows={rows}
+                    />
+                    {error && <span className="error-message">{error}</span>}
+                </>
             ) : type === 'select' ? (
-                <select
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    className="profile-input"
-                >
-                    {options.map(option => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
-                        </option>
-                    ))}
-                </select>
+                <>
+                    <select
+                        name={name}
+                        value={value}
+                        onChange={onChange}
+                        className={`profile-input ${error ? 'error' : ''}`}
+                    >
+                        {options.map(option => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                    {error && <span className="error-message">{error}</span>}
+                </>
             ) : (
-                <input
-                    type={type}
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    className="profile-input"
-                    placeholder={placeholder}
-                />
+                <>
+                    <input
+                        type={type}
+                        name={name}
+                        value={value}
+                        onChange={onChange}
+                        className={`profile-input ${error ? 'error' : ''}`}
+                        placeholder={placeholder}
+                    />
+                    {error && <span className="error-message">{error}</span>}
+                </>
             )}
         </div>
     );
 });
 
-const ReadOnlyField = React.memo(({ label, value }) => (
+const ReadOnlyField = React.memo(({ label, value, isEditing = false }) => (
     <div className="form-group">
         <label className="form-label">{label}</label>
-        <div className="profile-readonly">{value}</div>
+        <div className={`profile-readonly ${isEditing ? 'editable' : ''}`}>
+            {value}
+        </div>
     </div>
 ));
 
+ProfileHeader.displayName = 'ProfileHeader';
 ProfileInfoCard.displayName = 'ProfileInfoCard';
 StatsCard.displayName = 'StatsCard';
 AccountSettingsCard.displayName = 'AccountSettingsCard';
