@@ -12,6 +12,8 @@ import ForgotPassword from './components/auth/ForgotPassword';
 import ResetPassword from './components/auth/ResetPassword';
 import Header from './components/common/Header'; // Import Header here
 import Footer from './components/common/Footer'; // Import Footer if you want it on all pages
+import CreateAssessment from './components/LifestyleAssessment/CreateAssessment';
+import ViewAssessment from './components/LifestyleAssessment/ViewAssessment';
 
 // Pages
 import Home from './pages/Home';
@@ -93,6 +95,17 @@ function App() {
                             <Route path="/reset-password" element={<ResetPassword />} />
                         </Route>
 
+                        <Route path="/dashboard/assessment/create" element={
+                            <PrivateRoute>
+                                <CreateAssessment />
+                            </PrivateRoute>
+                        } />
+
+                        <Route path="/dashboard/assessment" element={
+                            <PrivateRoute>
+                                <ViewAssessment />
+                            </PrivateRoute>
+                        } />
                         {/* Catch all route */}
                         <Route path="*" element={<Navigate to="/" />} />
                     </Routes>

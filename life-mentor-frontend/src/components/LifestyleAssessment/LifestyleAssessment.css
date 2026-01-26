@@ -1,0 +1,312 @@
+/* Lifestyle Assessment - Professional Design */
+.assessment-container {
+    min-height: 100vh;
+    background: #f8f9fa;
+    padding: 2rem;
+}
+
+.back-button {
+    background: #4a5568;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+    margin-bottom: 2rem;
+}
+
+.back-button:hover {
+    background: #2d3748;
+}
+
+.assessment-card {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 3rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+    margin: 0 auto;
+    border: 1px solid #e2e8f0;
+}
+
+.assessment-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.assessment-title {
+    color: #2d3748;
+    font-size: 2.25rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.assessment-subtitle {
+    color: #718096;
+    font-size: 1.125rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Loading States */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 1.5rem;
+}
+
+.loading-spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 3px solid #e2e8f0;
+    border-top-color: #4a5568;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Form Styles */
+.assessment-form {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+    padding: 2rem;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.section-title {
+    color: #4a5568;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #4a5568;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    background: white;
+    color: #2d3748;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: #4a5568;
+    box-shadow: 0 0 0 3px rgba(74, 85, 104, 0.1);
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* Layout */
+.time-container,
+.row-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+/* Mood Selector */
+.mood-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.mood-button {
+    flex: 1;
+    min-width: 60px;
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    background: white;
+    color: #4a5568;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mood-button:hover {
+    border-color: #4a5568;
+    background: #f8fafc;
+}
+
+.mood-button.active {
+    border-color: #4a5568;
+    background: #4a5568;
+    color: white;
+}
+
+.mood-label {
+    font-size: 0.75rem;
+    color: #718096;
+    text-align: center;
+    margin-top: 0.25rem;
+}
+
+/* Buttons */
+.submit-button,
+.create-button,
+.update-button {
+    width: 100%;
+    padding: 0.875rem 2rem;
+    background: #4a5568;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.submit-button:hover,
+.create-button:hover,
+.update-button:hover {
+    background: #2d3748;
+}
+
+.submit-button:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+}
+
+/* Info Display */
+.info-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.info-item {
+    padding: 1rem;
+    background: white;
+    border-radius: 0.375rem;
+    border: 1px solid #e2e8f0;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    color: #718096;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: #2d3748;
+    font-weight: 500;
+}
+
+/* Note Card */
+.note-card {
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border-left: 4px solid #4a5568;
+}
+
+.note-content {
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .assessment-container {
+        padding: 1rem;
+    }
+
+    .assessment-card {
+        padding: 1.5rem;
+    }
+
+    .assessment-title {
+        font-size: 1.75rem;
+    }
+
+    .time-container,
+    .row-container {
+        grid-template-columns: 1fr;
+    }
+
+    .form-section {
+        padding: 1.5rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Error States */
+.form-input.error,
+.form-select.error {
+    border-color: #e53e3e;
+}
+
+.error-message {
+    color: #e53e3e;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Character Count */
+.char-count {
+    text-align: right;
+    font-size: 0.75rem;
+    color: #a0aec0;
+    margin-top: 0.25rem;
+}
