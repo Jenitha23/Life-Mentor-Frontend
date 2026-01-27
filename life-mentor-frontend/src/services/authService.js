@@ -1,9 +1,17 @@
 import api from './api';
 
 export const authService = {
-    // Register new user
+    // Register new user - FIXED: ensure confirmPassword is included
     async register(userData) {
-        const response = await api.post('/auth/register', userData);
+        // Ensure all required fields are present
+        const registerData = {
+            name: userData.name,
+            email: userData.email,
+            password: userData.password,
+            confirmPassword: userData.confirmPassword || userData.password // Fallback if not provided
+        };
+
+        const response = await api.post('/auth/register', registerData);
         if (response.data.success && response.data.data?.token) {
             localStorage.setItem('token', response.data.data.token);
             localStorage.setItem('user', JSON.stringify(response.data.data.user));
@@ -11,7 +19,7 @@ export const authService = {
         return response.data;
     },
 
-    // Login user
+    // Login user - OK
     async login(credentials) {
         const response = await api.post('/auth/login', credentials);
         if (response.data.success && response.data.data?.token) {
@@ -21,13 +29,13 @@ export const authService = {
         return response.data;
     },
 
-    // Forgot password
+    // Forgot password - OK
     async forgotPassword(email) {
         const response = await api.post('/auth/forgot-password', { email });
         return response.data;
     },
 
-    // Reset password
+    // Reset password - OK
     async resetPassword(token, newPassword, confirmPassword) {
         const response = await api.post('/auth/reset-password', {
             token,
@@ -41,33 +49,43 @@ export const authService = {
         return response.data;
     },
 
-    // Validate token
+    // Validate token - OK
     async validateToken() {
         const response = await api.post('/auth/validate-token');
         return response.data;
     },
 
-    // Logout
+    // Logout - OK
     logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        // Optional: Call logout API if you have one
-        // return api.post('/auth/logout');
     },
 
-    // Get current user from localStorage
+    // Get current user - OK
     getCurrentUser() {
         const userStr = localStorage.getItem('user');
-        return userStr ? JSON.parse(userStr) : null;
+        try {
+            if (!userStr || userStr === 'undefined' || userStr === 'null') {
+                return null;
+            }
+            return JSON.parse(userStr);
+        } catch (error) {
+            console.error('Error parsing user from localStorage:', error);
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            return null;
+        }
     },
 
-    // Get token
+    // Get token - OK
     getToken() {
-        return localStorage.getItem('token');
+        const token = localStorage.getItem('token');
+        return token && token !== 'undefined' ? token : null;
     },
 
-    // Check if user is authenticated
+    // Check if user is authenticated - OK
     isAuthenticated() {
-        return !!localStorage.getItem('token');
+        const token = this.getToken();
+        return !!token && token !== 'undefined';
     }
 };
