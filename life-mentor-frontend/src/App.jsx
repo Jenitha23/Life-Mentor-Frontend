@@ -10,8 +10,8 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ForgotPassword from './components/auth/ForgotPassword';
 import ResetPassword from './components/auth/ResetPassword';
-import Header from './components/common/Header'; // Import Header here
-import Footer from './components/common/Footer'; // Import Footer if you want it on all pages
+import Header from './components/common/Header';
+import Footer from './components/common/Footer';
 import CreateAssessment from './components/LifestyleAssessment/CreateAssessment';
 import ViewAssessment from './components/LifestyleAssessment/ViewAssessment';
 
@@ -19,6 +19,10 @@ import ViewAssessment from './components/LifestyleAssessment/ViewAssessment';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import AIChatPage from './pages/AIChatPage';
+import DailyCheckinPage from './pages/DailyCheckinPage';
+import GoalsPage from './pages/GoalsPage';
+import WellbeingPage from './pages/WellbeingPage';
 
 // Private Route Component
 const PrivateRoute = ({ children }) => {
@@ -38,7 +42,7 @@ const PrivateRoute = ({ children }) => {
     return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
-// Main Layout Component with Header
+// Main Layout Component with Header & Footer
 const MainLayout = () => {
     return (
         <div className="min-h-screen flex flex-col">
@@ -63,31 +67,66 @@ const AuthLayout = () => {
 function App() {
     return (
         <AuthProvider>
-            <Router>
+            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <div className="App">
                     <Routes>
-                        {/* Public Routes with Header & Footer */}
+                        {/* All Routes with Header & Footer (including auth routes that need header) */}
                         <Route element={<MainLayout />}>
+                            {/* Public Routes */}
                             <Route path="/" element={<Home />} />
-                            <Route
-                                path="/dashboard"
-                                element={
-                                    <PrivateRoute>
-                                        <Dashboard />
-                                    </PrivateRoute>
-                                }
-                            />
-                            <Route
-                                path="/profile"
-                                element={
-                                    <PrivateRoute>
-                                        <Profile />
-                                    </PrivateRoute>
-                                }
-                            />
+                            
+                            {/* Protected Routes */}
+                            <Route path="/dashboard" element={
+                                <PrivateRoute>
+                                    <Dashboard />
+                                </PrivateRoute>
+                            } />
+                            
+                            <Route path="/profile" element={
+                                <PrivateRoute>
+                                    <Profile />
+                                </PrivateRoute>
+                            } />
+                            
+                            <Route path="/ai-chat" element={
+                                <PrivateRoute>
+                                    <AIChatPage />
+                                </PrivateRoute>
+                            } />
+                            
+                            <Route path="/daily-checkin" element={
+                                <PrivateRoute>
+                                    <DailyCheckinPage />
+                                </PrivateRoute>
+                            } />
+                            
+                            <Route path="/goals" element={
+                                <PrivateRoute>
+                                    <GoalsPage />
+                                </PrivateRoute>
+                            } />
+                            
+                            <Route path="/wellbeing" element={
+                                <PrivateRoute>
+                                    <WellbeingPage />
+                                </PrivateRoute>
+                            } />
+                            
+                            {/* Assessment Routes - Nested under MainLayout */}
+                            <Route path="/dashboard/assessment/create" element={
+                                <PrivateRoute>
+                                    <CreateAssessment />
+                                </PrivateRoute>
+                            } />
+                            
+                            <Route path="/dashboard/assessment" element={
+                                <PrivateRoute>
+                                    <ViewAssessment />
+                                </PrivateRoute>
+                            } />
                         </Route>
 
-                        {/* Auth Routes without Header & Footer */}
+                        {/* Auth Routes without Header/Footer */}
                         <Route element={<AuthLayout />}>
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
@@ -95,19 +134,8 @@ function App() {
                             <Route path="/reset-password" element={<ResetPassword />} />
                         </Route>
 
-                        <Route path="/dashboard/assessment/create" element={
-                            <PrivateRoute>
-                                <CreateAssessment />
-                            </PrivateRoute>
-                        } />
-
-                        <Route path="/dashboard/assessment" element={
-                            <PrivateRoute>
-                                <ViewAssessment />
-                            </PrivateRoute>
-                        } />
                         {/* Catch all route */}
-                        <Route path="*" element={<Navigate to="/" />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
 
                     <ToastContainer

@@ -1,0 +1,131 @@
+/* AIChatHistory.css */
+.history-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.history-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #715F54;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0 0.5rem;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(213, 177, 149, 0.2);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.history-item:hover {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(174, 110, 78, 0.3);
+}
+
+.history-item.active {
+    background: rgba(174, 110, 78, 0.1);
+    border-color: #AE6E4E;
+}
+
+.history-item-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.history-item-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(174, 110, 78, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.history-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.history-item-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #2C1810;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-item-time {
+    font-size: 0.75rem;
+    color: #715F54;
+    opacity: 0.8;
+}
+
+.history-delete-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: none;
+    border: none;
+    color: #B85C5C;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    opacity: 0;
+}
+
+.history-item:hover .history-delete-btn {
+    opacity: 1;
+}
+
+.history-delete-btn:hover {
+    background: rgba(184, 92, 92, 0.1);
+}
+
+.delete-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.history-empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: #715F54;
+}
+
+.history-hint {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-top: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .history-delete-btn {
+        opacity: 1;
+    }
+}

@@ -1,0 +1,236 @@
+/* CheckinHistory.css */
+.checkin-history {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(213, 177, 149, 0.3);
+}
+
+.history-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2C1810;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(213, 177, 149, 0.3);
+}
+
+.history-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.history-day {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    border: 1px solid rgba(213, 177, 149, 0.2);
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.history-day:hover {
+    border-color: rgba(174, 110, 78, 0.3);
+    box-shadow: 0 2px 8px rgba(113, 95, 84, 0.1);
+}
+
+.day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.day-header:hover {
+    background: rgba(174, 110, 78, 0.05);
+}
+
+.day-header.expanded {
+    background: rgba(174, 110, 78, 0.05);
+    border-bottom: 1px solid rgba(213, 177, 149, 0.2);
+}
+
+.day-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.day-date {
+    font-weight: 500;
+    color: #2C1810;
+}
+
+.day-mood {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    background: rgba(174, 110, 78, 0.1);
+    border-radius: 16px;
+    color: #AE6E4E;
+    font-size: 0.85rem;
+}
+
+.day-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.day-count {
+    color: #715F54;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.expand-icon {
+    width: 18px;
+    height: 18px;
+    color: #715F54;
+    transition: transform 0.3s ease;
+}
+
+.expand-icon.rotated {
+    transform: rotate(180deg);
+}
+
+/* Day Details */
+.day-details {
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 6px;
+    border: 1px solid rgba(213, 177, 149, 0.2);
+}
+
+.detail-category {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-icon {
+    font-size: 1.1rem;
+}
+
+.category-name {
+    color: #715F54;
+    font-size: 0.9rem;
+    text-transform: capitalize;
+}
+
+.detail-answer {
+    font-weight: 500;
+    color: #2C1810;
+    padding: 0.25rem 0.75rem;
+    background: rgba(174, 110, 78, 0.05);
+    border-radius: 16px;
+    font-size: 0.9rem;
+}
+
+/* Empty State */
+.history-empty {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2C1810;
+    margin-bottom: 0.5rem;
+}
+
+.empty-text {
+    color: #715F54;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* Loading */
+.history-loading {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: #715F54;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .checkin-history {
+        padding: 1rem;
+    }
+
+    .day-header {
+        padding: 0.875rem 1rem;
+    }
+
+    .day-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .day-meta {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.25rem;
+    }
+
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .detail-answer {
+        align-self: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .history-title {
+        font-size: 1rem;
+    }
+
+    .day-date {
+        font-size: 0.9rem;
+    }
+
+    .day-mood {
+        font-size: 0.8rem;
+    }
+
+    .day-count {
+        font-size: 0.8rem;
+    }
+
+    .category-name {
+        font-size: 0.85rem;
+    }
+
+    .detail-answer {
+        font-size: 0.85rem;
+    }
+}

@@ -1,0 +1,241 @@
+/* Goals.css */
+.goals-component {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Header */
+.goals-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.goals-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #2C1810;
+    margin-bottom: 0.25rem;
+}
+
+.goals-subtitle {
+    color: #715F54;
+    font-size: 0.95rem;
+}
+
+.create-goal-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #AE6E4E 0%, #8C5843 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(174, 110, 78, 0.2);
+}
+
+.create-goal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(174, 110, 78, 0.3);
+}
+
+.create-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* Stats */
+.goals-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: rgba(245, 245, 221, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(213, 177, 149, 0.3);
+}
+
+.stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #AE6E4E;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: #715F54;
+    font-size: 0.85rem;
+}
+
+/* Filter Tabs */
+.goals-filter {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    padding: 0.25rem;
+    background: rgba(245, 245, 221, 0.5);
+    border-radius: 8px;
+    border: 1px solid rgba(213, 177, 149, 0.3);
+}
+
+.filter-btn {
+    flex: 1;
+    padding: 0.75rem;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    color: #715F54;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    background: rgba(174, 110, 78, 0.1);
+    color: #2C1810;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #AE6E4E 0%, #8C5843 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(174, 110, 78, 0.3);
+}
+
+/* Goals Grid */
+.goals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Empty State */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(245, 245, 221, 0.5);
+    border-radius: 16px;
+    border: 1px solid rgba(213, 177, 149, 0.3);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2C1810;
+    margin-bottom: 0.5rem;
+}
+
+.empty-text {
+    color: #715F54;
+    margin-bottom: 1.5rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
+.empty-action-btn {
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, #AE6E4E 0%, #8C5843 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.empty-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(174, 110, 78, 0.3);
+}
+
+/* Loading */
+.goals-loading {
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: #715F54;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .goals-component {
+        padding: 1rem;
+    }
+
+    .goals-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .goals-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .goals-filter {
+        flex-direction: column;
+    }
+
+    .goals-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .goals-title {
+        font-size: 1.5rem;
+    }
+
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .create-goal-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+
+    .empty-icon {
+        font-size: 2.5rem;
+    }
+
+    .empty-title {
+        font-size: 1.1rem;
+    }
+}

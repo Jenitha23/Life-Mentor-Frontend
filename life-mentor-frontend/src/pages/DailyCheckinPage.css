@@ -1,0 +1,309 @@
+/* DailyCheckinPage.css */
+.checkin-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    min-height: calc(100vh - 140px);
+    background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fa 100%);
+}
+
+.checkin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: rgba(245, 245, 221, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(213, 177, 149, 0.4);
+    box-shadow: 0 4px 20px rgba(113, 95, 84, 0.08);
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2C1810;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #AE6E4E 0%, #8C5843 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-subtitle {
+    color: #715F54;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.streak-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(174, 110, 78, 0.1);
+    border-radius: 40px;
+    border: 1px solid rgba(174, 110, 78, 0.3);
+}
+
+.streak-icon {
+    width: 24px;
+    height: 24px;
+    color: #AE6E4E;
+}
+
+.streak-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #AE6E4E;
+}
+
+.streak-label {
+    color: #715F54;
+    font-size: 0.9rem;
+}
+
+/* Completed Check-in */
+.completed-checkin {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(245, 245, 221, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(213, 177, 149, 0.4);
+    animation: slideUp 0.5s ease;
+}
+
+.completed-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    animation: bounce 1s ease;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.completed-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #2C1810;
+    margin-bottom: 1rem;
+}
+
+.completed-text {
+    color: #715F54;
+    max-width: 400px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+}
+
+.history-toggle-btn {
+    padding: 0.75rem 2rem;
+    background: rgba(174, 110, 78, 0.1);
+    border: 1px solid #AE6E4E;
+    border-radius: 8px;
+    color: #AE6E4E;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.history-toggle-btn:hover {
+    background: rgba(174, 110, 78, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Form */
+.checkin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.submit-btn {
+    padding: 1rem 3rem;
+    background: linear-gradient(135deg, #AE6E4E 0%, #8C5843 100%);
+    color: white;
+    border: none;
+    border-radius: 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(174, 110, 78, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(174, 110, 78, 0.4);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* History Section */
+.history-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: rgba(245, 245, 221, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(213, 177, 149, 0.4);
+}
+
+.history-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2C1810;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(213, 177, 149, 0.3);
+}
+
+.history-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.history-date-group {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(213, 177, 149, 0.2);
+}
+
+.history-date {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #AE6E4E;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(213, 177, 149, 0.2);
+}
+
+.history-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    border: 1px solid rgba(213, 177, 149, 0.2);
+}
+
+.history-question {
+    color: #715F54;
+    font-size: 0.95rem;
+}
+
+.history-answer {
+    font-weight: 600;
+    color: #2C1810;
+    padding: 0.25rem 0.75rem;
+    background: rgba(174, 110, 78, 0.1);
+    border-radius: 16px;
+}
+
+.history-empty {
+    text-align: center;
+    color: #715F54;
+    padding: 2rem;
+}
+
+/* Loading */
+.checkin-loading {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: #715F54;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .checkin-page {
+        padding: 1rem;
+    }
+
+    .checkin-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+    }
+
+    .streak-badge {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .completed-checkin {
+        padding: 2rem 1rem;
+    }
+
+    .completed-title {
+        font-size: 1.5rem;
+    }
+
+    .history-section {
+        padding: 1rem;
+    }
+
+    .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .history-answer {
+        align-self: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 1.5rem;
+    }
+
+    .submit-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .history-date {
+        font-size: 0.9rem;
+    }
+
+    .history-question {
+        font-size: 0.85rem;
+    }
+}
