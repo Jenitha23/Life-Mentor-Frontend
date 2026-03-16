@@ -10,7 +10,7 @@ if (redirect) {
   window.history.replaceState(
     null,
     '',
-    '/Life-Mentor-Frontend' + redirect
+    import.meta.env.BASE_URL.replace(/\/$/, '') + redirect
   )
 }
 

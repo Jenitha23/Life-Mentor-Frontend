@@ -39,7 +39,7 @@ const PrivateRoute = ({ children }) => {
         );
     }
 
-    return isAuthenticated ? children : <Navigate to="/login" />;
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 // Main Layout Component with Header & Footer
@@ -67,63 +67,89 @@ const AuthLayout = () => {
 function App() {
     return (
         <AuthProvider>
-            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <Router
+                basename={import.meta.env.BASE_URL}
+                future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+            >
                 <div className="App">
                     <Routes>
-                        {/* All Routes with Header & Footer (including auth routes that need header) */}
+                        {/* All Routes with Header & Footer */}
                         <Route element={<MainLayout />}>
                             {/* Public Routes */}
                             <Route path="/" element={<Home />} />
-                            
+
                             {/* Protected Routes */}
-                            <Route path="/dashboard" element={
-                                <PrivateRoute>
-                                    <Dashboard />
-                                </PrivateRoute>
-                            } />
-                            
-                            <Route path="/profile" element={
-                                <PrivateRoute>
-                                    <Profile />
-                                </PrivateRoute>
-                            } />
-                            
-                            <Route path="/ai-chat" element={
-                                <PrivateRoute>
-                                    <AIChatPage />
-                                </PrivateRoute>
-                            } />
-                            
-                            <Route path="/daily-checkin" element={
-                                <PrivateRoute>
-                                    <DailyCheckinPage />
-                                </PrivateRoute>
-                            } />
-                            
-                            <Route path="/goals" element={
-                                <PrivateRoute>
-                                    <GoalsPage />
-                                </PrivateRoute>
-                            } />
-                            
-                            <Route path="/wellbeing" element={
-                                <PrivateRoute>
-                                    <WellbeingPage />
-                                </PrivateRoute>
-                            } />
-                            
-                            {/* Assessment Routes - Nested under MainLayout */}
-                            <Route path="/dashboard/assessment/create" element={
-                                <PrivateRoute>
-                                    <CreateAssessment />
-                                </PrivateRoute>
-                            } />
-                            
-                            <Route path="/dashboard/assessment" element={
-                                <PrivateRoute>
-                                    <ViewAssessment />
-                                </PrivateRoute>
-                            } />
+                            <Route
+                                path="/dashboard"
+                                element={
+                                    <PrivateRoute>
+                                        <Dashboard />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/profile"
+                                element={
+                                    <PrivateRoute>
+                                        <Profile />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/ai-chat"
+                                element={
+                                    <PrivateRoute>
+                                        <AIChatPage />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/daily-checkin"
+                                element={
+                                    <PrivateRoute>
+                                        <DailyCheckinPage />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/goals"
+                                element={
+                                    <PrivateRoute>
+                                        <GoalsPage />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/wellbeing"
+                                element={
+                                    <PrivateRoute>
+                                        <WellbeingPage />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/dashboard/assessment/create"
+                                element={
+                                    <PrivateRoute>
+                                        <CreateAssessment />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/dashboard/assessment"
+                                element={
+                                    <PrivateRoute>
+                                        <ViewAssessment />
+                                    </PrivateRoute>
+                                }
+                            />
                         </Route>
 
                         {/* Auth Routes without Header/Footer */}
