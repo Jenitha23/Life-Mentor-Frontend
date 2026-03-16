@@ -1,6 +1,28 @@
 import api from './api';
 
 export const dailyCheckinService = {
+    // Get active daily check-in questions
+    async getQuestions() {
+        try {
+            const response = await api.get('/daily-checkin/questions');
+            return response.data;
+        } catch (error) {
+            console.error('Get daily check-in questions error:', error);
+            throw error;
+        }
+    },
+
+    // Get category-specific daily check-in questions
+    async getQuestionsByCategory(category) {
+        try {
+            const response = await api.get(`/daily-checkin/questions/category/${category}`);
+            return response.data;
+        } catch (error) {
+            console.error('Get daily check-in questions by category error:', error);
+            throw error;
+        }
+    },
+
     // Submit daily check-in (batch)
     async submitDailyCheckin(responses) {
         try {

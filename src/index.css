@@ -3,26 +3,63 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --clay: #ae6e4e;
+  --clay-deep: #8c5843;
+  --clay-light: #d5b195;
+  --parchment: #f5f0e8;
+  --cream: #fdfaf5;
+  --bark: #2c1810;
+  --sand: #715f54;
+  --mist: #e8ddd4;
+}
+
 @layer base {
+  * {
+    @apply box-border;
+  }
+
+  html {
+    @apply antialiased;
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900 font-sans;
+    margin: 0;
+    @apply font-sans;
+    background: var(--cream);
+    color: var(--bark);
+  }
+
+  a {
+    color: inherit;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50;
+    @apply text-white font-medium py-2.5 px-6 rounded-lg transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none;
+    background: linear-gradient(135deg, var(--clay), var(--clay-deep));
+    box-shadow: 0 8px 22px rgba(174, 110, 78, 0.25);
   }
 
   .btn-secondary {
-    @apply bg-secondary-600 hover:bg-secondary-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-opacity-50;
+    @apply font-medium py-2.5 px-6 rounded-lg transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none;
+    color: var(--sand);
+    border: 1px solid rgba(213, 177, 149, 0.6);
+    background: rgba(245, 240, 232, 0.9);
   }
 
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition duration-200;
+    @apply w-full px-4 py-3 rounded-lg focus:outline-none transition duration-200;
+    border: 1px solid rgba(213, 177, 149, 0.45);
+    background: #fff;
+    color: var(--bark);
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition duration-300;
+    @apply bg-white rounded-xl p-6 transition duration-300;
+    border: 1px solid rgba(213, 177, 149, 0.22);
+    box-shadow: 0 10px 28px rgba(44, 24, 16, 0.08);
   }
 }

@@ -20,8 +20,8 @@ const DailyCheckinPage = () => {
     const [showHistory, setShowHistory] = useState(false);
     const [history, setHistory] = useState([]);
 
-    // Predefined questions (these would come from backend in real app)
-    const defaultQuestions = [
+    // Fallback question set used only if API questions are unavailable
+    const fallbackQuestions = [
         {
             id: '11111111-1111-1111-1111-111111111111',
             question: 'How would you rate your mood today? (1-5)',
@@ -64,6 +64,25 @@ const DailyCheckinPage = () => {
         }
     ];
 
+    const parseOptions = (rawOptions) => {
+        if (!rawOptions) return {};
+        if (typeof rawOptions === 'object') return rawOptions;
+        try {
+            return JSON.parse(rawOptions);
+        } catch {
+            return {};
+        }
+    };
+
+    const mapBackendQuestion = (question) => ({
+        id: question.id,
+        question: question.question,
+        type: question.questionType || question.type,
+        category: question.category,
+        options: parseOptions(question.options),
+        displayOrder: question.displayOrder
+    });
+
     useEffect(() => {
         if (!user) {
             navigate('/login');
@@ -102,8 +121,21 @@ const DailyCheckinPage = () => {
                 setHistory(historyResult.data);
             }
 
-            // Set questions
-            setQuestions(defaultQuestions);
+            // Load active questions from backend
+            try {
+                const questionsResult = await dailyCheckinService.getQuestions();
+                if (questionsResult.success && Array.isArray(questionsResult.data) && questionsResult.data.length > 0) {
+                    const mappedQuestions = questionsResult.data
+                        .map(mapBackendQuestion)
+                        .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+                    setQuestions(mappedQuestions);
+                } else {
+                    setQuestions(fallbackQuestions);
+                }
+            } catch (questionError) {
+                console.error('Error loading questions from backend:', questionError);
+                setQuestions(fallbackQuestions);
+            }
         } catch (error) {
             console.error('Error loading data:', error);
             toast.error('Failed to load check-in data');

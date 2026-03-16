@@ -8,6 +8,7 @@ import { lifestyleAssessmentService } from '../services/lifestyleAssessmentServi
 import PasswordChange from '../components/PasswordChange';
 import FileUploadModal from '../components/FileUploadModal';
 import DeleteAccountModal from '../components/DeleteAccountModal';
+import DeactivateAccountModal from '../components/DeactivateAccountModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import './Profile.css';
 
@@ -26,6 +27,7 @@ const Profile = () => {
     const [showPasswordChange, setShowPasswordChange] = useState(false);
     const [showFileUpload, setShowFileUpload] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showDeactivateModal, setShowDeactivateModal] = useState(false);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const [deletingPhoto, setDeletingPhoto] = useState(false);
     const [assessmentStatus, setAssessmentStatus] = useState(false);
@@ -116,7 +118,16 @@ const Profile = () => {
             // Check assessment status
             try {
                 console.log('Checking assessment status...');
-                const hasAssessment = await lifestyleAssessmentService.hasAssessment();
+                let hasAssessment = false;
+
+                try {
+                    const assessmentStatusResult = await profileService.checkAssessmentStatus();
+                    hasAssessment = !!assessmentStatusResult?.data?.hasAssessment;
+                } catch (statusError) {
+                    // Fallback for compatibility if endpoint is unavailable
+                    hasAssessment = await lifestyleAssessmentService.hasAssessment();
+                }
+
                 setAssessmentStatus(hasAssessment);
                 console.log('Assessment status:', hasAssessment);
             } catch (assessmentError) {
@@ -296,10 +307,10 @@ const Profile = () => {
                 toast.success('Profile picture updated!');
                 setShowFileUpload(false);
                 if (result.data) {
-                    updateUser(prev => ({
-                        ...prev,
+                    updateUser({
+                        ...user,
                         profilePictureUrl: result.data
-                    }));
+                    });
                 }
             } else {
                 toast.error(result.message || 'Failed to upload picture');
@@ -315,7 +326,7 @@ const Profile = () => {
         } finally {
             setUploadingPhoto(false);
         }
-    }, [updateUser]);
+    }, [updateUser, user]);
 
     // Stable delete picture handler
     const handleDeletePicture = useCallback(async () => {
@@ -328,10 +339,10 @@ const Profile = () => {
             const result = await profileService.deleteProfilePicture();
             if (result.success) {
                 toast.success('Profile picture removed');
-                updateUser(prev => ({
-                    ...prev,
+                updateUser({
+                    ...user,
                     profilePictureUrl: null
-                }));
+                });
             } else {
                 toast.error(result.message || 'Failed to remove picture');
             }
@@ -341,7 +352,7 @@ const Profile = () => {
         } finally {
             setDeletingPhoto(false);
         }
-    }, [updateUser]);
+    }, [updateUser, user]);
 
     // Stable delete account handler
     const handleDeleteAccount = useCallback(async () => {
@@ -359,6 +370,24 @@ const Profile = () => {
             toast.error('Failed to delete account');
         } finally {
             setShowDeleteModal(false);
+        }
+    }, [logout, navigate]);
+
+    const handleDeactivateAccount = useCallback(async () => {
+        try {
+            const result = await profileService.deactivateAccount();
+            if (result.success) {
+                toast.success('Account deactivated. You can reactivate by logging in again.');
+                logout();
+                navigate('/login');
+            } else {
+                toast.error(result.message || 'Failed to deactivate account');
+            }
+        } catch (error) {
+            console.error('Deactivate account error:', error);
+            toast.error(error.response?.data?.message || 'Failed to deactivate account');
+        } finally {
+            setShowDeactivateModal(false);
         }
     }, [logout, navigate]);
 
@@ -442,6 +471,7 @@ const Profile = () => {
                         key="settings-card"
                         user={user}
                         onPasswordChange={() => setShowPasswordChange(true)}
+                        onDeactivateAccount={() => setShowDeactivateModal(true)}
                         onDeletePicture={handleDeletePicture}
                         deletingPhoto={deletingPhoto}
                         onLogout={() => {
@@ -476,6 +506,14 @@ const Profile = () => {
                         key="delete-account-modal"
                         onClose={() => setShowDeleteModal(false)}
                         onConfirm={handleDeleteAccount}
+                    />
+                )}
+
+                {showDeactivateModal && (
+                    <DeactivateAccountModal
+                        key="deactivate-account-modal"
+                        onClose={() => setShowDeactivateModal(false)}
+                        onConfirm={handleDeactivateAccount}
                     />
                 )}
             </AnimatePresence>
@@ -746,6 +784,7 @@ const StatsCard = React.memo(({
 const AccountSettingsCard = React.memo(({
                                             user,
                                             onPasswordChange,
+                                            onDeactivateAccount,
                                             onDeletePicture,
                                             deletingPhoto,
                                             onLogout,
@@ -795,6 +834,16 @@ const AccountSettingsCard = React.memo(({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 Notification Settings
+            </button>
+
+            <button
+                onClick={onDeactivateAccount}
+                className="profile-action-btn"
+            >
+                <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l2.156-4.312A2 2 0 017.392 5H13m0 0l-2-2m2 2l-2 2m7 7h.01M19 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Deactivate Account
             </button>
 
             <button

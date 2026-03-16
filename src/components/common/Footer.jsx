@@ -54,8 +54,8 @@ const Footer = () => {
                             <ul className="footer-links">
                                 <li><Link to="/features" className="footer-link">Features</Link></li>
                                 <li><Link to="/pricing" className="footer-link">Pricing</Link></li>
-                                <li><Link to="/testimonials" className="footer-link">Testimonials</Link></li>
-                                <li><Link to="/faq" className="footer-link">FAQ</Link></li>
+                                <li><Link to="/dashboard" className="footer-link">Dashboard</Link></li>
+                                <li><Link to="/goals" className="footer-link">Goals</Link></li>
                             </ul>
                         </div>
 
@@ -64,9 +64,9 @@ const Footer = () => {
                             <h3 className="footer-heading">Company</h3>
                             <ul className="footer-links">
                                 <li><Link to="/about" className="footer-link">About Us</Link></li>
-                                <li><Link to="/blog" className="footer-link">Blog</Link></li>
-                                <li><Link to="/careers" className="footer-link">Careers</Link></li>
-                                <li><Link to="/press" className="footer-link">Press</Link></li>
+                                <li><Link to="/contact" className="footer-link">Contact</Link></li>
+                                <li><Link to="/ai-chat" className="footer-link">AI Coach</Link></li>
+                                <li><Link to="/wellbeing" className="footer-link">Wellbeing</Link></li>
                             </ul>
                         </div>
 
@@ -76,7 +76,6 @@ const Footer = () => {
                             <ul className="footer-links">
                                 <li><Link to="/privacy" className="footer-link">Privacy Policy</Link></li>
                                 <li><Link to="/terms" className="footer-link">Terms of Service</Link></li>
-                                <li><Link to="/cookies" className="footer-link">Cookie Policy</Link></li>
                                 <li><Link to="/contact" className="footer-link">Contact Us</Link></li>
                             </ul>
                         </div>

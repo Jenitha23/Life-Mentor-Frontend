@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { lifestyleAssessmentService } from '../../services/lifestyleAssessmentService';
+import { aiFeedbackService } from '../../services/aiFeedbackService';
 import { toast } from 'react-toastify';
 import './LifestyleAssessment.css';
 
@@ -12,6 +13,10 @@ const ViewAssessment = () => {
     const [editData, setEditData] = useState({});
     const [updating, setUpdating] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [aiFeedback, setAiFeedback] = useState(null);
+    const [feedbackLoading, setFeedbackLoading] = useState(false);
+    const [feedbackGenerating, setFeedbackGenerating] = useState(false);
+    const [feedbackDeleting, setFeedbackDeleting] = useState(false);
 
     useEffect(() => {
         fetchAssessment();
@@ -23,6 +28,11 @@ const ViewAssessment = () => {
             const result = await lifestyleAssessmentService.getAssessment();
             if (result.success) {
                 setAssessment(result.data);
+                if (result.data?.hasAIFeedback) {
+                    await fetchAIFeedback(result.data.id);
+                } else {
+                    setAiFeedback(null);
+                }
                 // Prepare edit data
                 setEditData({
                     ...result.data,
@@ -38,6 +48,21 @@ const ViewAssessment = () => {
             }
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchAIFeedback = async (assessmentId) => {
+        try {
+            setFeedbackLoading(true);
+            const result = await aiFeedbackService.getFeedbackForAssessment(assessmentId);
+            if (result.success) {
+                setAiFeedback(result.data);
+            }
+        } catch (error) {
+            console.error('Error loading AI feedback:', error);
+            setAiFeedback(null);
+        } finally {
+            setFeedbackLoading(false);
         }
     };
 
@@ -79,6 +104,11 @@ const ViewAssessment = () => {
             if (result.success) {
                 toast.success('Assessment updated successfully!');
                 setAssessment(result.data);
+                if (result.data?.hasAIFeedback) {
+                    await fetchAIFeedback(result.data.id);
+                } else {
+                    setAiFeedback(null);
+                }
                 setIsEditing(false);
             } else {
                 toast.error(result.message || 'Failed to update assessment');
@@ -162,6 +192,48 @@ const ViewAssessment = () => {
             case 4: return '🙂';
             case 5: return '😊';
             default: return '';
+        }
+    };
+
+    const handleGenerateAIFeedback = async () => {
+        if (!assessment?.id) return;
+        setFeedbackGenerating(true);
+        try {
+            const result = await aiFeedbackService.generateFeedback(assessment.id);
+            if (result.success) {
+                toast.success('AI feedback generated successfully');
+                setAiFeedback(result.data);
+                setAssessment(prev => ({ ...prev, hasAIFeedback: true }));
+            } else {
+                toast.error(result.message || 'Failed to generate AI feedback');
+            }
+        } catch (error) {
+            console.error('Error generating AI feedback:', error);
+            toast.error(error.response?.data?.message || 'Failed to generate AI feedback');
+        } finally {
+            setFeedbackGenerating(false);
+        }
+    };
+
+    const handleDeleteAIFeedback = async () => {
+        if (!assessment?.id) return;
+        if (!window.confirm('Delete AI feedback for this assessment?')) return;
+
+        setFeedbackDeleting(true);
+        try {
+            const result = await aiFeedbackService.deleteFeedback(assessment.id);
+            if (result.success) {
+                toast.success('AI feedback deleted');
+                setAiFeedback(null);
+                setAssessment(prev => ({ ...prev, hasAIFeedback: false }));
+            } else {
+                toast.error(result.message || 'Failed to delete AI feedback');
+            }
+        } catch (error) {
+            console.error('Error deleting AI feedback:', error);
+            toast.error(error.response?.data?.message || 'Failed to delete AI feedback');
+        } finally {
+            setFeedbackDeleting(false);
         }
     };
 
@@ -510,6 +582,65 @@ const ViewAssessment = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="info-section">
+                        <div className="section-title-row">
+                            <h3 className="section-title">AI Feedback</h3>
+                            <div className="header-actions">
+                                {!assessment.hasAIFeedback && (
+                                    <button
+                                        className="edit-button"
+                                        onClick={handleGenerateAIFeedback}
+                                        disabled={feedbackGenerating}
+                                    >
+                                        {feedbackGenerating ? 'Generating...' : 'Generate AI Feedback'}
+                                    </button>
+                                )}
+                                {assessment.hasAIFeedback && aiFeedback && (
+                                    <button
+                                        className="delete-button"
+                                        onClick={handleDeleteAIFeedback}
+                                        disabled={feedbackDeleting}
+                                    >
+                                        {feedbackDeleting ? 'Deleting...' : 'Delete Feedback'}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {feedbackLoading ? (
+                            <p className="loading-text">Loading AI feedback...</p>
+                        ) : aiFeedback ? (
+                            <div className="ai-feedback-card">
+                                <div className="info-grid">
+                                    <div className="info-item">
+                                        <div className="info-label">Risk Level</div>
+                                        <div className="info-value">{aiFeedback.riskLevel || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                <div className="note-card">
+                                    <p className="info-label">Summary</p>
+                                    <p className="note-content">{aiFeedback.summary || 'No summary available.'}</p>
+                                </div>
+                                <div className="note-card">
+                                    <p className="info-label">Positive Highlights</p>
+                                    <p className="note-content">{aiFeedback.positiveHighlights || 'No highlights available.'}</p>
+                                </div>
+                                <div className="note-card">
+                                    <p className="info-label">Suggestions</p>
+                                    <p className="note-content">{aiFeedback.suggestions || 'No suggestions available.'}</p>
+                                </div>
+                                <div className="note-card">
+                                    <p className="info-label">Motivational Message</p>
+                                    <p className="note-content">{aiFeedback.motivationalMessage || 'Stay consistent and keep going.'}</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="empty-text">
+                                No AI feedback yet. Generate feedback to receive personalized insights.
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

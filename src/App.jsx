@@ -23,6 +23,12 @@ import AIChatPage from './pages/AIChatPage';
 import DailyCheckinPage from './pages/DailyCheckinPage';
 import GoalsPage from './pages/GoalsPage';
 import WellbeingPage from './pages/WellbeingPage';
+import AboutPage from './pages/AboutPage';
+import FeaturesPage from './pages/FeaturesPage';
+import PricingPage from './pages/PricingPage';
+import ContactPage from './pages/ContactPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 // Private Route Component
 const PrivateRoute = ({ children }) => {
@@ -77,6 +83,12 @@ function App() {
                         <Route element={<MainLayout />}>
                             {/* Public Routes */}
                             <Route path="/" element={<Home />} />
+                            <Route path="/about" element={<AboutPage />} />
+                            <Route path="/features" element={<FeaturesPage />} />
+                            <Route path="/pricing" element={<PricingPage />} />
+                            <Route path="/contact" element={<ContactPage />} />
+                            <Route path="/terms" element={<TermsPage />} />
+                            <Route path="/privacy" element={<PrivacyPage />} />
 
                             {/* Protected Routes */}
                             <Route
