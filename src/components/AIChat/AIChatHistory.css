@@ -1,65 +1,82 @@
 /* AIChatHistory.css */
 .history-container {
     flex: 1;
+    min-height: 0;          /* CRITICAL: allows flex child to scroll within parent */
     overflow-y: auto;
-    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
 }
 
+/* Thin custom scrollbar */
+.history-container::-webkit-scrollbar { width: 4px; }
+.history-container::-webkit-scrollbar-track { background: transparent; }
+.history-container::-webkit-scrollbar-thumb { background: #D5B195; border-radius: 4px; }
+.history-container::-webkit-scrollbar-thumb:hover { background: #AE6E4E; }
+
 .history-title {
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: #715F54;
-    margin-bottom: 1rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 0 0.5rem;
+    letter-spacing: 0.08em;
+    padding: 1.1rem 1.25rem 0.65rem;
+    flex-shrink: 0;
+    border-top: 1px solid #E8DDD4;
 }
 
 .history-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.35rem;
+    padding: 0 0.75rem 1rem;
 }
 
 .history-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem;
+    padding: 0.65rem 0.75rem;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.3);
-    border: 1px solid rgba(213, 177, 149, 0.2);
-    transition: all 0.2s ease;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all 0.18s ease;
     cursor: pointer;
 }
 
 .history-item:hover {
-    background: rgba(255, 255, 255, 0.5);
-    border-color: rgba(174, 110, 78, 0.3);
+    background: white;
+    border-color: #E8DDD4;
 }
 
 .history-item.active {
-    background: rgba(174, 110, 78, 0.1);
-    border-color: #AE6E4E;
+    background: white;
+    border-color: #D5B195;
+    box-shadow: 0 2px 8px rgba(44,24,16,0.07);
 }
 
 .history-item-content {
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.65rem;
     min-width: 0;
 }
 
 .history-item-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: rgba(174, 110, 78, 0.1);
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: #F0E5DA;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.history-item.active .history-item-icon {
+    background: rgba(174, 110, 78, 0.15);
 }
 
 .history-item-info {
@@ -68,34 +85,41 @@
 }
 
 .history-item-title {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 500;
-    color: #2C1810;
-    margin-bottom: 0.25rem;
+    color: #5A3E35;
+    margin-bottom: 0.15rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.history-item.active .history-item-title {
+    color: #2C1810;
 }
 
 .history-item-time {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: #715F54;
-    opacity: 0.8;
+    opacity: 0.75;
 }
 
 .history-delete-btn {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border-radius: 6px;
     background: none;
     border: none;
-    color: #B85C5C;
+    color: #D5B195;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     opacity: 0;
+    flex-shrink: 0;
+    padding: 0;
 }
 
 .history-item:hover .history-delete-btn {
@@ -104,28 +128,27 @@
 
 .history-delete-btn:hover {
     background: rgba(184, 92, 92, 0.1);
+    color: #B85C5C;
 }
 
-.delete-icon {
-    width: 14px;
-    height: 14px;
-}
+.delete-icon { width: 14px; height: 14px; }
 
 .history-empty {
-    padding: 2rem 1rem;
+    padding: 2rem 1.25rem;
     text-align: center;
     color: #715F54;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    border-top: 1px solid #E8DDD4;
 }
 
 .history-hint {
-    font-size: 0.85rem;
-    opacity: 0.7;
-    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    opacity: 0.65;
+    margin-top: 0.4rem;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .history-delete-btn {
-        opacity: 1;
-    }
+    .history-delete-btn { opacity: 1; }
 }
