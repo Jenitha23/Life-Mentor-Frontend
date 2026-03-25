@@ -1,6 +1,22 @@
 import api from './api';
 
 export const dailyCheckinService = {
+    formatLocalDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
+
+    normalizeResponsePayload(response) {
+        return {
+            ...response,
+            metadata: typeof response.metadata === 'string'
+                ? response.metadata
+                : JSON.stringify(response.metadata || {})
+        };
+    },
+
     // Get active daily check-in questions
     async getQuestions() {
         try {
@@ -26,7 +42,8 @@ export const dailyCheckinService = {
     // Submit daily check-in (batch)
     async submitDailyCheckin(responses) {
         try {
-            const response = await api.post('/daily-checkin/batch', { responses });
+            const payload = responses.map((response) => this.normalizeResponsePayload(response));
+            const response = await api.post('/daily-checkin/batch', { responses: payload });
             return response.data;
         } catch (error) {
             console.error('Submit daily check-in error:', error);
@@ -35,12 +52,12 @@ export const dailyCheckinService = {
     },
 
     // Submit single response
-    async submitSingleResponse(questionId, answer, metadata = {}) {
+    async submitSingleResponse(questionId, responseValue, notes = '') {
         try {
             const response = await api.post('/daily-checkin/single', {
                 questionId,
-                answer,
-                metadata: JSON.stringify(metadata)
+                responseValue,
+                notes
             });
             return response.data;
         } catch (error) {
@@ -69,6 +86,40 @@ export const dailyCheckinService = {
             console.error('Get check-in by date error:', error);
             throw error;
         }
+    },
+
+    // Get check-in history across a date range by combining per-day backend responses
+    async getHistoryRange(startDate, endDate) {
+        const dates = [];
+        const current = new Date(`${startDate}T00:00:00`);
+        const last = new Date(`${endDate}T00:00:00`);
+
+        while (current <= last) {
+            dates.push(this.formatLocalDate(current));
+            current.setDate(current.getDate() + 1);
+        }
+
+        const results = await Promise.allSettled(
+            dates.map((date) => this.getCheckinByDate(date))
+        );
+
+        const data = results.flatMap((result) => (
+            result.status === 'fulfilled' && result.value?.success && Array.isArray(result.value.data)
+                ? result.value.data
+                : []
+        ));
+
+        data.sort((a, b) => {
+            const dateCompare = new Date(b.responseDate) - new Date(a.responseDate);
+            if (dateCompare !== 0) return dateCompare;
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        return {
+            success: true,
+            message: 'Check-in history retrieved successfully',
+            data
+        };
     },
 
     // Get analytics

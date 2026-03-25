@@ -9,6 +9,13 @@ const CheckinHistory = ({ days = 7 }) => {
     const [history, setHistory] = useState([]);
     const [expandedDate, setExpandedDate] = useState(null);
 
+    const formatLocalDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     useEffect(() => {
         loadHistory();
     }, [days]);
@@ -16,12 +23,12 @@ const CheckinHistory = ({ days = 7 }) => {
     const loadHistory = async () => {
         setLoading(true);
         try {
-            const endDate = new Date().toISOString().split('T')[0];
+            const endDate = formatLocalDate(new Date());
             const startDate = new Date();
-            startDate.setDate(startDate.getDate() - days);
-            const startDateStr = startDate.toISOString().split('T')[0];
+            startDate.setDate(startDate.getDate() - (days - 1));
+            const startDateStr = formatLocalDate(startDate);
 
-            const result = await dailyCheckinService.getCheckinByDate(startDateStr);
+            const result = await dailyCheckinService.getHistoryRange(startDateStr, endDate);
             if (result.success) {
                 setHistory(groupByDate(result.data));
             }

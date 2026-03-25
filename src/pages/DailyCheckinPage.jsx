@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { dailyCheckinService } from '../services/dailyCheckinService';
 import CheckinQuestion from '../components/DailyCheckin/CheckinQuestion';
+import CheckinHistory from '../components/DailyCheckin/CheckinHistory';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import './DailyCheckinPage.css';
 
@@ -18,7 +19,6 @@ const DailyCheckinPage = () => {
     const [todaysCheckin, setTodaysCheckin] = useState(null);
     const [streak, setStreak] = useState(0);
     const [showHistory, setShowHistory] = useState(false);
-    const [history, setHistory] = useState([]);
 
     // Fallback question set used only if API questions are unavailable
     const fallbackQuestions = [
@@ -83,6 +83,20 @@ const DailyCheckinPage = () => {
         displayOrder: question.displayOrder
     });
 
+    const dedupeQuestions = (items) => {
+        const seen = new Set();
+        return items.filter((item) => {
+            const key = [
+                String(item.question || '').trim().toLowerCase(),
+                String(item.category || '').trim().toLowerCase(),
+                String(item.type || '').trim().toLowerCase()
+            ].join('|');
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    };
+
     useEffect(() => {
         if (!user) {
             navigate('/login');
@@ -113,21 +127,14 @@ const DailyCheckinPage = () => {
                 setStreak(streakResult.data.currentStreak);
             }
 
-            // Get history (last 7 days)
-            const endDate = new Date().toISOString().split('T')[0];
-            const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-            const historyResult = await dailyCheckinService.getCheckinByDate(startDate);
-            if (historyResult.success) {
-                setHistory(historyResult.data);
-            }
-
             // Load active questions from backend
             try {
                 const questionsResult = await dailyCheckinService.getQuestions();
                 if (questionsResult.success && Array.isArray(questionsResult.data) && questionsResult.data.length > 0) {
-                    const mappedQuestions = questionsResult.data
+                    const mappedQuestions = dedupeQuestions(
+                        questionsResult.data
                         .map(mapBackendQuestion)
-                        .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+                    ).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
                     setQuestions(mappedQuestions);
                 } else {
                     setQuestions(fallbackQuestions);
@@ -203,12 +210,21 @@ const DailyCheckinPage = () => {
                         {todaysCheckin ? 'You\'ve already checked in today!' : 'How are you feeling today?'}
                     </p>
                 </div>
-                <div className="streak-badge">
-                    <svg className="streak-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <span className="streak-value">{streak}</span>
-                    <span className="streak-label">day streak</span>
+                <div className="header-actions">
+                    <button
+                        type="button"
+                        className="history-toggle-btn"
+                        onClick={() => setShowHistory(!showHistory)}
+                    >
+                        {showHistory ? 'Hide History' : 'View History'}
+                    </button>
+                    <div className="streak-badge">
+                        <svg className="streak-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span className="streak-value">{streak}</span>
+                        <span className="streak-label">day streak</span>
+                    </div>
                 </div>
             </div>
 
@@ -223,14 +239,6 @@ const DailyCheckinPage = () => {
                     <p className="completed-text">
                         You've successfully checked in for today. Come back tomorrow to continue your streak!
                     </p>
-                    <div className="completed-actions">
-                        <button
-                            className="history-toggle-btn"
-                            onClick={() => setShowHistory(!showHistory)}
-                        >
-                            {showHistory ? 'Hide History' : 'View History'}
-                        </button>
-                    </div>
                 </motion.div>
             ) : (
                 <form onSubmit={handleSubmit} className="checkin-form">
@@ -277,63 +285,11 @@ const DailyCheckinPage = () => {
                     exit={{ opacity: 0, y: -20 }}
                     className="history-section"
                 >
-                    <h3 className="history-section-title">Recent Check-ins</h3>
-                    {history.length === 0 ? (
-                        <p className="history-empty">No check-in history yet</p>
-                    ) : (
-                        <div className="history-grid">
-                            {groupByDate(history).map(([date, items]) => (
-                                <div key={date} className="history-date-group">
-                                    <h4 className="history-date">{formatDate(date)}</h4>
-                                    <div className="history-items">
-                                        {items.map(item => (
-                                            <div key={item.id} className="history-item">
-                                                <span className="history-question">
-                                                    {item.question}
-                                                </span>
-                                                <span className="history-answer">
-                                                    {item.answer}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    <CheckinHistory days={7} />
                 </motion.div>
             )}
         </div>
     );
-};
-
-const groupByDate = (history) => {
-    const grouped = {};
-    history.forEach(item => {
-        if (!grouped[item.responseDate]) {
-            grouped[item.responseDate] = [];
-        }
-        grouped[item.responseDate].push(item);
-    });
-    return Object.entries(grouped).sort((a, b) => new Date(b[0]) - new Date(a[0]));
-};
-
-const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-        return 'Today';
-    } else if (date.toDateString() === yesterday.toDateString()) {
-        return 'Yesterday';
-    }
-    return date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-    });
 };
 
 export default DailyCheckinPage;

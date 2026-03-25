@@ -106,6 +106,20 @@ const DailyCheckin = ({ onComplete }) => {
         displayOrder: question.displayOrder
     });
 
+    const dedupeQuestions = (items) => {
+        const seen = new Set();
+        return items.filter((item) => {
+            const key = [
+                String(item.question || '').trim().toLowerCase(),
+                String(item.category || '').trim().toLowerCase(),
+                String(item.type || '').trim().toLowerCase()
+            ].join('|');
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    };
+
     useEffect(() => {
         loadData();
     }, []);
@@ -137,9 +151,10 @@ const DailyCheckin = ({ onComplete }) => {
             try {
                 const questionsResult = await dailyCheckinService.getQuestions();
                 if (questionsResult.success && Array.isArray(questionsResult.data) && questionsResult.data.length > 0) {
-                    const mappedQuestions = questionsResult.data
+                    const mappedQuestions = dedupeQuestions(
+                        questionsResult.data
                         .map(mapBackendQuestion)
-                        .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+                    ).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
                     setQuestions(mappedQuestions);
                 } else {
                     setQuestions(fallbackQuestions);

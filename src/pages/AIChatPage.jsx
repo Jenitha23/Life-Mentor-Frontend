@@ -19,9 +19,11 @@ const AIChatPage = () => {
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('GENERAL');
+    const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
+    const categoryMenuRef = useRef(null);
 
     const categories = [
         { value: 'GENERAL', label: 'General', icon: '💬' },
@@ -43,6 +45,17 @@ const AIChatPage = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (categoryMenuRef.current && !categoryMenuRef.current.contains(event.target)) {
+                setCategoryMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -226,22 +239,47 @@ const AIChatPage = () => {
 
                     <div className="categories-section">
                         <h3 className="categories-title">Categories</h3>
-                        <div className="categories-list">
-                            {categories.map(category => (
-                                <button
-                                    key={category.value}
-                                    className={`category-item ${selectedCategory === category.value ? 'active' : ''}`}
-                                    onClick={() => {
-                                        setSelectedCategory(category.value);
-                                        if (!currentConversation) {
-                                            // Only update category for new chats
-                                        }
-                                    }}
-                                >
-                                    <span className="category-icon">{category.icon}</span>
-                                    <span className="category-label">{category.label}</span>
-                                </button>
-                            ))}
+                        <div
+                            className={`category-select-wrap ${categoryMenuOpen ? 'open' : ''}`}
+                            ref={categoryMenuRef}
+                        >
+                            <button
+                                type="button"
+                                className="category-select-trigger"
+                                onClick={() => setCategoryMenuOpen((open) => !open)}
+                                aria-haspopup="listbox"
+                                aria-expanded={categoryMenuOpen}
+                            >
+                                <span className="category-select-icon" aria-hidden="true">
+                                    {(categories.find((category) => category.value === selectedCategory) || categories[0]).icon}
+                                </span>
+                                <span className="category-select-value">
+                                    {(categories.find((category) => category.value === selectedCategory) || categories[0]).label}
+                                </span>
+                                <span className="category-select-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                                        <path d="M5 7.5L10 12.5L15 7.5" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                                    </svg>
+                                </span>
+                            </button>
+                            {categoryMenuOpen && (
+                                <div className="category-select-menu" role="listbox">
+                                    {categories.map((category) => (
+                                        <button
+                                            key={category.value}
+                                            type="button"
+                                            className={`category-option ${selectedCategory === category.value ? 'active' : ''}`}
+                                            onClick={() => {
+                                                setSelectedCategory(category.value);
+                                                setCategoryMenuOpen(false);
+                                            }}
+                                        >
+                                            <span className="category-option-icon" aria-hidden="true">{category.icon}</span>
+                                            <span className="category-option-label">{category.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -266,31 +304,29 @@ const AIChatPage = () => {
                     </button>
 
                     {/* Chat Header */}
-                    <div className="chat-header">
-                        <div className="chat-header-info">
-                            <h3 className="chat-title">
-                                {currentConversation ? currentConversation.title : 'New Conversation'}
-                            </h3>
-                            {currentConversation && (
+                    {currentConversation && (
+                        <div className="chat-header">
+                            <div className="chat-header-info">
+                                <h3 className="chat-title">{currentConversation.title}</h3>
                                 <span className="chat-category">
                                     {categories.find(c => c.value === currentConversation.category)?.icon}{' '}
                                     {categories.find(c => c.value === currentConversation.category)?.label}
                                 </span>
+                            </div>
+                            {messages.length > 0 && (
+                                <button
+                                    className="regenerate-btn"
+                                    onClick={handleRegenerateResponse}
+                                    disabled={sending}
+                                    title="Regenerate last response"
+                                >
+                                    <svg className="regenerate-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </button>
                             )}
                         </div>
-                        {currentConversation && messages.length > 0 && (
-                            <button
-                                className="regenerate-btn"
-                                onClick={handleRegenerateResponse}
-                                disabled={sending}
-                                title="Regenerate last response"
-                            >
-                                <svg className="regenerate-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                            </button>
-                        )}
-                    </div>
+                    )}
 
                     {/* Messages Area */}
                     <div className="messages-container">

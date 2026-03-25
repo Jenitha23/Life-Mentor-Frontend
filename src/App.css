@@ -8,8 +8,8 @@
 .App {
   min-height: 100vh;
   background:
-    radial-gradient(900px 500px at 110% -10%, rgba(174, 110, 78, 0.08), transparent 70%),
-    radial-gradient(700px 420px at -10% 15%, rgba(213, 177, 149, 0.12), transparent 72%),
-    #fdfaf5;
-  color: #2c1810;
+    radial-gradient(1000px 600px at 100% 0%, rgba(182, 109, 74, 0.06), transparent 80%),
+    radial-gradient(800px 500px at -10% 20%, rgba(220, 167, 142, 0.1), transparent 80%),
+    #FDF9F5;
+  color: #3B2A22;
 }

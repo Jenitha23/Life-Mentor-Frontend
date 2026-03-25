@@ -2,15 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { lifestyleAssessmentService } from '../services/lifestyleAssessmentService';
+import { profileService } from '../services/profileService';
 import { dailyCheckinService } from '../services/dailyCheckinService';
 import { goalService } from '../services/goalService';
 import { wellbeingService } from '../services/wellbeingService';
 import './Dashboard.css';
 
 const Dashboard = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [hasAssessment, setHasAssessment] = useState(false);
@@ -43,8 +42,9 @@ const Dashboard = () => {
 
     const fetchUserData = async () => {
         try {
-            // Check if user has lifestyle assessment
-            const hasAssessmentResult = await lifestyleAssessmentService.hasAssessment();
+            // Check if user has lifestyle assessment via the profile assessment-status endpoint
+            const assessmentStatusResult = await profileService.checkAssessmentStatus();
+            const hasAssessmentResult = assessmentStatusResult?.data?.hasAssessment ?? false;
             setHasAssessment(hasAssessmentResult);
 
             // Get streak
@@ -190,12 +190,6 @@ const Dashboard = () => {
         navigate('/dashboard/assessment');
     };
 
-    const handleLogout = () => {
-        logout();
-        toast.success('Logged out successfully');
-        navigate('/login');
-    };
-
     const handleViewProfile = () => {
         navigate('/profile');
     };
@@ -227,26 +221,17 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-container">
-            {/* Header */}
-            <header className="dashboard-header">
-                <div className="header-content">
-                    <div className="header-left">
-                        <h1 className="dashboard-title">Life Mentor Dashboard</h1>
-                        <p className="welcome-text">Welcome back, {user?.name}!</p>
-                    </div>
-                    <div className="header-right">
-                        <span className="user-email">{user?.email}</span>
-                        <button
-                            onClick={handleLogout}
-                            className="logout-btn"
-                        >
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </header>
-
             <main className="dashboard-main">
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45 }}
+                    className="dashboard-page-heading"
+                >
+                    <h1 className="dashboard-page-title">Life Mentor Dashboard</h1>
+                    <p className="dashboard-page-subtitle">Welcome back, {user?.name}!</p>
+                </motion.div>
+
                 {/* Assessment Banner */}
                 {!hasAssessment && (
                     <motion.div
@@ -388,30 +373,30 @@ const Dashboard = () => {
                     <h2 className="section-title">Quick Actions</h2>
                     <div className="actions-grid">
                         <button
-                            className="action-btn"
+                            className="quick-action-btn"
                             onClick={handleDailyCheckin}
                         >
-                            <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="quick-action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             <span>Daily Check-in</span>
                         </button>
 
                         <button
-                            className="action-btn"
+                            className="quick-action-btn"
                             onClick={handleAIChat}
                         >
-                            <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="quick-action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                             </svg>
                             <span>AI Coach</span>
                         </button>
 
                         <button
-                            className="action-btn"
+                            className="quick-action-btn"
                             onClick={handleGoals}
                         >
-                            <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="quick-action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
                             </svg>
@@ -419,10 +404,10 @@ const Dashboard = () => {
                         </button>
 
                         <button
-                            className="action-btn"
+                            className="quick-action-btn"
                             onClick={handleWellbeing}
                         >
-                            <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="quick-action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
                             <span>Wellbeing</span>
@@ -430,20 +415,20 @@ const Dashboard = () => {
 
                         {hasAssessment ? (
                             <button
-                                className="action-btn"
+                                className="quick-action-btn"
                                 onClick={handleViewAssessment}
                             >
-                                <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="quick-action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
                                 <span>View Assessment</span>
                             </button>
                         ) : (
                             <button
-                                className="action-btn assessment-action-btn"
+                                className="quick-action-btn assessment-action-btn"
                                 onClick={handleCreateAssessment}
                             >
-                                <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="quick-action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
                                 <span>Start Lifestyle Assessment</span>
@@ -451,10 +436,10 @@ const Dashboard = () => {
                         )}
 
                         <button
-                            className="action-btn"
+                            className="quick-action-btn"
                             onClick={handleViewProfile}
                         >
-                            <svg className="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="quick-action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                             <span>View Profile</span>

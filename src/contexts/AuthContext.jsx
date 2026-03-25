@@ -22,7 +22,13 @@ export const AuthProvider = ({ children }) => {
         try {
             const result = await authService.login({ email, password });
             if (result.success) {
-                setUser(result.data.user);
+                // API returns flat data: { token, userId, email, name }
+                const userObj = {
+                    userId: result.data.userId,
+                    email: result.data.email,
+                    name: result.data.name
+                };
+                setUser(userObj);
                 return { success: true, data: result.data };
             }
             return { success: false, message: result.message };
@@ -35,7 +41,13 @@ export const AuthProvider = ({ children }) => {
         try {
             const result = await authService.register(userData);
             if (result.success) {
-                setUser(result.data.user);
+                // API returns flat data: { token, userId, email, name }
+                const userObj = {
+                    userId: result.data.userId,
+                    email: result.data.email,
+                    name: result.data.name
+                };
+                setUser(userObj);
                 return { success: true, data: result.data };
             }
             return { success: false, message: result.message };
@@ -44,8 +56,8 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
-        authService.logout();
+    const logout = async () => {
+        await authService.logout();
         setUser(null);
     };
 
@@ -61,11 +73,8 @@ export const AuthProvider = ({ children }) => {
     const resetPassword = async (token, newPassword, confirmPassword) => {
         try {
             const result = await authService.resetPassword(token, newPassword, confirmPassword);
-            if (result.success) {
-                setUser(result.data.user);
-                return { success: true, data: result.data };
-            }
-            return { success: false, message: result.message };
+            // Reset-password does not return a new session token; just report success
+            return { success: result.success, message: result.message };
         } catch (error) {
             return { success: false, message: error.message };
         }

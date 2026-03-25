@@ -68,11 +68,11 @@ export const goalService = {
     },
 
     // Update goal progress
-    async updateGoalProgress(goalId, currentValue, notes = '') {
+    async updateGoalProgress(goalId, progressPercentage, notes = '') {
         try {
             const response = await api.patch('/goals/progress', {
                 goalId,
-                currentValue,
+                progressPercentage,
                 notes
             });
             return response.data;

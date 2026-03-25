@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider } from './contexts/AuthContext';
@@ -50,13 +50,16 @@ const PrivateRoute = ({ children }) => {
 
 // Main Layout Component with Header & Footer
 const MainLayout = () => {
+    const location = useLocation();
+    const hideFooter = location.pathname === '/ai-chat';
+
     return (
         <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-grow">
                 <Outlet />
             </main>
-            <Footer />
+            {!hideFooter && <Footer />}
         </div>
     );
 };
