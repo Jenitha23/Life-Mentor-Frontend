@@ -1,0 +1,71 @@
+.ai-debug-page {
+    min-height: calc(100vh - 140px);
+    padding: 2rem;
+    background: #FDFAF5;
+}
+
+.ai-debug-card {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border: 1px solid #E8DDD4;
+    border-radius: 24px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 24px rgba(44, 24, 16, 0.1);
+}
+
+.ai-debug-header h1 {
+    margin: 0;
+    color: #2C1810;
+    font-family: 'Playfair Display', serif;
+}
+
+.ai-debug-header p {
+    color: #715F54;
+    margin-top: 0.4rem;
+}
+
+.ai-debug-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.ai-debug-actions button {
+    border: none;
+    border-radius: 999px;
+    background: #2C1810;
+    color: #F0E5DA;
+    padding: 0.75rem 1.2rem;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.ai-debug-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ai-debug-result {
+    margin-top: 1rem;
+    border: 1px solid #E8DDD4;
+    border-radius: 16px;
+    padding: 1rem;
+    background: #FDFBF8;
+}
+
+.ai-debug-result h2 {
+    margin: 0 0 0.75rem;
+    color: #2C1810;
+}
+
+.ai-debug-result pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: #2C1810;
+    color: #F0E5DA;
+    border-radius: 12px;
+    padding: 1rem;
+    overflow-x: auto;
+}

@@ -30,6 +30,7 @@ import ContactPage from './pages/ContactPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import NotificationsPage from './pages/NotificationsPage';
+import AIFeedbackDebugPage from './pages/AIFeedbackDebugPage';
 
 // Private Route Component
 const PrivateRoute = ({ children }) => {
@@ -130,6 +131,14 @@ function App() {
                                     </PrivateRoute>
                                 }
                             />
+                            <Route
+    path="/ai-feedback-debug"
+    element={
+        <PrivateRoute>
+            <AIFeedbackDebugPage />
+        </PrivateRoute>
+    }
+/>
 
                             <Route
                                 path="/goals"

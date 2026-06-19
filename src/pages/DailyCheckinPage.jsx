@@ -7,11 +7,13 @@ import { dailyCheckinService } from '../services/dailyCheckinService';
 import CheckinQuestion from '../components/DailyCheckin/CheckinQuestion';
 import CheckinHistory from '../components/DailyCheckin/CheckinHistory';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import CheckinInsights from '../components/DailyCheckin/CheckinInsights';
 import './DailyCheckinPage.css';
 
 const DailyCheckinPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [questions, setQuestions] = useState([]);
@@ -19,8 +21,8 @@ const DailyCheckinPage = () => {
     const [todaysCheckin, setTodaysCheckin] = useState(null);
     const [streak, setStreak] = useState(0);
     const [showHistory, setShowHistory] = useState(false);
+    const [selectedQuestionCategory, setSelectedQuestionCategory] = useState('ALL');
 
-    // Fallback question set used only if API questions are unavailable
     const fallbackQuestions = [
         {
             id: '11111111-1111-1111-1111-111111111111',
@@ -64,9 +66,21 @@ const DailyCheckinPage = () => {
         }
     ];
 
+    const questionCategories = [
+        { value: 'ALL', label: 'All' },
+        { value: 'MOOD', label: 'Mood' },
+        { value: 'SLEEP', label: 'Sleep' },
+        { value: 'EXERCISE', label: 'Exercise' },
+        { value: 'NUTRITION', label: 'Nutrition' },
+        { value: 'PRODUCTIVITY', label: 'Productivity' },
+        { value: 'GENERAL', label: 'General' },
+        { value: 'STRESS', label: 'Stress' }
+    ];
+
     const parseOptions = (rawOptions) => {
         if (!rawOptions) return {};
         if (typeof rawOptions === 'object') return rawOptions;
+
         try {
             return JSON.parse(rawOptions);
         } catch {
@@ -85,64 +99,87 @@ const DailyCheckinPage = () => {
 
     const dedupeQuestions = (items) => {
         const seen = new Set();
+
         return items.filter((item) => {
             const key = [
                 String(item.question || '').trim().toLowerCase(),
                 String(item.category || '').trim().toLowerCase(),
                 String(item.type || '').trim().toLowerCase()
             ].join('|');
+
             if (seen.has(key)) return false;
+
             seen.add(key);
             return true;
         });
     };
 
-    useEffect(() => {
-        if (!user) {
-            navigate('/login');
-            return;
+    const getFallbackQuestionsByCategory = (category) => {
+        if (category === 'ALL') {
+            return fallbackQuestions;
         }
-        loadData();
-    }, [user, navigate]);
+
+        return fallbackQuestions.filter((question) => question.category === category);
+    };
+
+    const loadQuestionsByCategory = async (category = selectedQuestionCategory) => {
+        try {
+            const questionsResult =
+                category === 'ALL'
+                    ? await dailyCheckinService.getQuestions()
+                    : await dailyCheckinService.getQuestionsByCategory(category);
+
+            if (
+                questionsResult.success &&
+                Array.isArray(questionsResult.data) &&
+                questionsResult.data.length > 0
+            ) {
+                const mappedQuestions = dedupeQuestions(
+                    questionsResult.data.map(mapBackendQuestion)
+                ).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+                setQuestions(mappedQuestions);
+            } else {
+                setQuestions(getFallbackQuestionsByCategory(category));
+            }
+        } catch (error) {
+            console.error('Error loading questions by category:', error);
+            toast.error('Failed to load questions for selected category');
+            setQuestions(getFallbackQuestionsByCategory(category));
+        }
+    };
 
     const loadData = async () => {
         setLoading(true);
+
         try {
-            // Get today's check-in
             const todayResult = await dailyCheckinService.getTodaysCheckin();
-            if (todayResult.success && todayResult.data.length > 0) {
+
+            if (
+                todayResult.success &&
+                Array.isArray(todayResult.data) &&
+                todayResult.data.length > 0
+            ) {
                 setTodaysCheckin(todayResult.data);
-                
-                // Map responses
+
                 const responseMap = {};
-                todayResult.data.forEach(r => {
-                    responseMap[r.questionId] = r.answer;
+                todayResult.data.forEach((response) => {
+                    responseMap[response.questionId] = response.answer;
                 });
+
                 setResponses(responseMap);
+            } else {
+                setTodaysCheckin(null);
+                setResponses({});
             }
 
-            // Get streak
             const streakResult = await dailyCheckinService.getStreak();
+
             if (streakResult.success) {
-                setStreak(streakResult.data.currentStreak);
+                setStreak(streakResult.data?.currentStreak || 0);
             }
 
-            // Load active questions from backend
-            try {
-                const questionsResult = await dailyCheckinService.getQuestions();
-                if (questionsResult.success && Array.isArray(questionsResult.data) && questionsResult.data.length > 0) {
-                    const mappedQuestions = dedupeQuestions(
-                        questionsResult.data
-                        .map(mapBackendQuestion)
-                    ).sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
-                    setQuestions(mappedQuestions);
-                } else {
-                    setQuestions(fallbackQuestions);
-                }
-            } catch (questionError) {
-                console.error('Error loading questions from backend:', questionError);
-                setQuestions(fallbackQuestions);
-            }
+            await loadQuestionsByCategory(selectedQuestionCategory);
         } catch (error) {
             console.error('Error loading data:', error);
             toast.error('Failed to load check-in data');
@@ -151,28 +188,50 @@ const DailyCheckinPage = () => {
         }
     };
 
+    useEffect(() => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+
+        loadData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, navigate]);
+
+    const handleQuestionCategoryChange = async (category) => {
+        setSelectedQuestionCategory(category);
+        setResponses({});
+        await loadQuestionsByCategory(category);
+    };
+
     const handleResponseChange = (questionId, answer) => {
-        setResponses(prev => ({
-            ...prev,
+        setResponses((previous) => ({
+            ...previous,
             [questionId]: answer
         }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (event) => {
+        event.preventDefault();
 
-        // Check if all questions are answered
-        const unanswered = questions.filter(q => !responses[q.id]);
+        const unanswered = questions.filter(
+            (question) =>
+                responses[question.id] === undefined ||
+                responses[question.id] === null ||
+                responses[question.id] === ''
+        );
+
         if (unanswered.length > 0) {
             toast.error('Please answer all questions');
             return;
         }
 
         setSubmitting(true);
+
         try {
-            const responsesList = questions.map(q => ({
-                questionId: q.id,
-                answer: responses[q.id],
+            const responsesList = questions.map((question) => ({
+                questionId: question.id,
+                answer: String(responses[question.id]),
                 metadata: {}
             }));
 
@@ -180,7 +239,7 @@ const DailyCheckinPage = () => {
 
             if (result.success) {
                 toast.success('Daily check-in completed!');
-                loadData(); // Refresh data
+                await loadData();
             } else {
                 toast.error(result.message || 'Failed to submit check-in');
             }
@@ -207,9 +266,12 @@ const DailyCheckinPage = () => {
                 <div className="header-left">
                     <h1 className="page-title">Daily Check-in</h1>
                     <p className="page-subtitle">
-                        {todaysCheckin ? 'You\'ve already checked in today!' : 'How are you feeling today?'}
+                        {todaysCheckin
+                            ? "You've already checked in today!"
+                            : 'How are you feeling today?'}
                     </p>
                 </div>
+
                 <div className="header-actions">
                     <button
                         type="button"
@@ -218,9 +280,20 @@ const DailyCheckinPage = () => {
                     >
                         {showHistory ? 'Hide History' : 'View History'}
                     </button>
+
                     <div className="streak-badge">
-                        <svg className="streak-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        <svg
+                            className="streak-icon"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                            />
                         </svg>
                         <span className="streak-value">{streak}</span>
                         <span className="streak-label">day streak</span>
@@ -241,41 +314,62 @@ const DailyCheckinPage = () => {
                     </p>
                 </motion.div>
             ) : (
-                <form onSubmit={handleSubmit} className="checkin-form">
-                    <AnimatePresence>
-                        {questions.map((question, index) => (
-                            <CheckinQuestion
-                                key={question.id}
-                                question={question}
-                                value={responses[question.id]}
-                                onChange={handleResponseChange}
-                                index={index}
-                            />
-                        ))}
-                    </AnimatePresence>
+                <>
+                    <div className="question-category-filter">
+                        <span>Question Category:</span>
 
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.5 }}
-                        className="form-actions"
-                    >
-                        <button
-                            type="submit"
-                            className="submit-btn"
-                            disabled={submitting}
+                        <div className="question-category-buttons">
+                            {questionCategories.map((category) => (
+                                <button
+                                    key={category.value}
+                                    type="button"
+                                    className={`question-category-btn ${
+                                        selectedQuestionCategory === category.value ? 'active' : ''
+                                    }`}
+                                    onClick={() => handleQuestionCategoryChange(category.value)}
+                                >
+                                    {category.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="checkin-form">
+                        <AnimatePresence>
+                            {questions.map((question, index) => (
+                                <CheckinQuestion
+                                    key={question.id}
+                                    question={question}
+                                    value={responses[question.id]}
+                                    onChange={handleResponseChange}
+                                    index={index}
+                                />
+                            ))}
+                        </AnimatePresence>
+
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.5 }}
+                            className="form-actions"
                         >
-                            {submitting ? (
-                                <>
-                                    <LoadingSpinner size="small" />
-                                    Submitting...
-                                </>
-                            ) : (
-                                'Complete Check-in'
-                            )}
-                        </button>
-                    </motion.div>
-                </form>
+                            <button
+                                type="submit"
+                                className="submit-btn"
+                                disabled={submitting || questions.length === 0}
+                            >
+                                {submitting ? (
+                                    <>
+                                        <LoadingSpinner size="small" />
+                                        Submitting...
+                                    </>
+                                ) : (
+                                    'Complete Check-in'
+                                )}
+                            </button>
+                        </motion.div>
+                    </form>
+                </>
             )}
 
             {showHistory && (
@@ -288,6 +382,8 @@ const DailyCheckinPage = () => {
                     <CheckinHistory days={7} />
                 </motion.div>
             )}
+
+            <CheckinInsights />
         </div>
     );
 };
