@@ -68,19 +68,19 @@ export const goalService = {
     },
 
     // Update goal progress
-    async updateGoalProgress(goalId, progressPercentage, notes = '') {
-        try {
-            const response = await api.patch('/goals/progress', {
-                goalId,
-                progressPercentage,
-                notes
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Update goal progress error:', error);
-            throw error;
-        }
-    },
+    async updateGoalProgress(goalId, currentValue, notes = '') {
+    try {
+        const response = await api.patch('/goals/progress', {
+            goalId,
+            currentValue,
+            notes
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Update goal progress error:', error);
+        throw error;
+    }
+},
 
     // Complete goal
     async completeGoal(goalId) {
