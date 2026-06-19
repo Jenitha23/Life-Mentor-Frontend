@@ -29,6 +29,7 @@ import PricingPage from './pages/PricingPage';
 import ContactPage from './pages/ContactPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 // Private Route Component
 const PrivateRoute = ({ children }) => {
@@ -174,6 +175,8 @@ function App() {
                             <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/reset-password" element={<ResetPassword />} />
                         </Route>
+                            <Route path="/notifications" element={<PrivateRoute> <NotificationsPage /> </PrivateRoute>  }
+/>
 
                         {/* Catch all route */}
                         <Route path="*" element={<Navigate to="/" replace />} />

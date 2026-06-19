@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
+import NotificationBell from '../Notifications/NotificationBell';
 import './Header.css';
 
 const Header = () => {
@@ -60,6 +61,9 @@ const Header = () => {
                                 <Link to="/dashboard" className="nav-link">
                                     Dashboard
                                 </Link>
+
+                                <NotificationBell />
+
                                 <Link to="/profile" className="nav-link">
                                     Profile
                                 </Link>
@@ -118,14 +122,13 @@ const Header = () => {
                     <div className="mobile-nav-content">
                         {navLinks.map((link) => (
                             <NavLink
-                                key={link.path}
-                                to={link.path}
+                                to="/notifications"
                                 className={({ isActive }) =>
                                     `mobile-nav-link ${isActive ? 'active' : ''}`
                                 }
                                 onClick={() => setMobileMenuOpen(false)}
                             >
-                                {link.label}
+                                Notifications
                             </NavLink>
                         ))}
 
