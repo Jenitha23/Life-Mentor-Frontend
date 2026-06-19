@@ -52,19 +52,19 @@ export const dailyCheckinService = {
     },
 
     // Submit single response
-    async submitSingleResponse(questionId, responseValue, notes = '') {
-        try {
-            const response = await api.post('/daily-checkin/single', {
-                questionId,
-                responseValue,
-                notes
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Submit single response error:', error);
-            throw error;
-        }
-    },
+    async submitSingleResponse(questionId, answer, metadata = {}) {
+    try {
+        const response = await api.post('/daily-checkin/single', {
+            questionId,
+            answer: String(answer),
+            metadata: typeof metadata === 'string' ? metadata : JSON.stringify(metadata)
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Submit single response error:', error);
+        throw error;
+    }
+},
 
     // Get today's check-in
     async getTodaysCheckin() {
